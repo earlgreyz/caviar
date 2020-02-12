@@ -73,3 +73,13 @@ class Road:
         x, lane = position
         self.lanes[lane][x] = vehicle
         self.vehicles_count += 1
+
+    # Statistics
+    def getAverageVelocity(self) -> float:
+        if self.vehicles_count == 0:
+            return 0.
+        velocity = 0
+        for lane in self.lanes:
+            for vehicle in lane.values():
+                velocity += vehicle.velocity
+        return float(velocity) / self.vehicles_count
