@@ -1,14 +1,14 @@
 # Setting up the development environment
 
-## Creating the virtual environment
+Before proceeding follow the guide in [README](./README.md) to set up the
+virtual environment. Make sure you have it activated before installing
+additional packages.
 ```sh
-$ virtualenv --python=python3.7 venv
 $ source venv/bin/activate
 ```
 
 ## Installing required python packages
 ```sh
-(venv) $ pip install -r requirements.txt
 (venv) $ pip install -r requirements-dev.txt
 ```
 
