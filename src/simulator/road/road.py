@@ -18,15 +18,10 @@ class Road:
     length: int
     lanes_count: int
 
-    # Statistics.
-    vehicles_count: int
-
     def __init__(self, length: int, lanes_count: int, params: typing.Optional[RoadParams] = None):
         self.params = params if params is not None else RoadParams()
         self.length = length
         self.lanes_count = lanes_count
-        # Initialize statistics.
-        self.vehicles_count = 0
 
     def addVehicle(self, position: Position, vehicle: Vehicle) -> None:
         '''
@@ -104,8 +99,6 @@ class Road:
             x, i = f(vehicle)
             if x < self.length:
                 self.addPendingVehicle(position=(x, i), vehicle=vehicle)
-            else:
-                self.vehicles_count -= 1
         self._commitLanes()
 
     def step(self) -> None:
@@ -118,9 +111,8 @@ class Road:
 
     # Statistics
     def getAverageVelocity(self) -> float:
-        if self.vehicles_count == 0:
-            return 0.
-        velocity = 0
+        velocity, count = 0, 0
         for vehicle in self.getAllVehicles():
             velocity += vehicle.velocity
-        return float(velocity) / self.vehicles_count
+            count += 1
+        return float(velocity) / count if count > 0 else 0.

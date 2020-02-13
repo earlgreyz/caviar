@@ -25,7 +25,6 @@ class SparseRoad(Road):
     def addVehicle(self, position: Position, vehicle: Vehicle) -> None:
         x, lane = position
         self.lanes[lane][x] = vehicle
-        self.vehicles_count += 1
 
     def getVehicle(self, position: Position) -> typing.Optional[Vehicle]:
         x, lane = position
@@ -41,7 +40,6 @@ class SparseRoad(Road):
     def addPendingVehicle(self, position: Position, vehicle: Vehicle) -> None:
         x, lane = position
         self.pending_lanes[lane][x] = vehicle
-        self.vehicles_count += 1
 
     def getMaxSpeed(self, position: Position) -> int:
         next, vehicle = self.getNextVehicle(position=position)
