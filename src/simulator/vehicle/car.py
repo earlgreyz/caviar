@@ -26,6 +26,7 @@ class Car(Vehicle):
         self.params = params if params is not None else CarParams()
 
     def beforeMove(self) -> Position:
+        self.last_position = self.position
         x, lane = self.position
         if self._changeLane(destination=(x, lane + 1)):
             self.position = (x, lane + 1)

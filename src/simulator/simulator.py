@@ -13,3 +13,4 @@ class Simulator:
     def step(self):
         self.dispatcher.dispatch()
         self.road.step()
+        print(f'Average velocity: {self.road.getAverageVelocity()}')
