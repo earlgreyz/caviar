@@ -27,9 +27,9 @@ class Car(Vehicle):
 
     def beforeMove(self) -> Position:
         x, lane = self.position
-        if self.__changeLane(destination=(x, lane + 1)):
+        if self._changeLane(destination=(x, lane + 1)):
             self.position = (x, lane + 1)
-        elif self.__changeLane(destination=(x, lane - 1)):
+        elif self._changeLane(destination=(x, lane - 1)):
             self.position = (x, lane - 1)
         return self.position
 
@@ -42,10 +42,12 @@ class Car(Vehicle):
         self.position = x + self.velocity, lane
         return self.position
 
-    def __changeLane(self, destination: Position) -> bool:
+    def _changeLane(self, destination: Position) -> bool:
         x, _ = self.position
         # Check if it is possible to change the lane.
-        if not self.road.canChangeLane(position=destination):
+        if not self.road.isProperPosition(position=destination):
+            return False
+        if self.road.getVehicle(position=destination) is not None:
             return False
         # Check if the speed limit on the destination lane is higher.
         limit = self.road.getMaxSpeed(self.position)

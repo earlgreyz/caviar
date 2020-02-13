@@ -1,7 +1,8 @@
 import click
 
-from simulator.road.road import Road, RoadParams
+from simulator.road.road import RoadParams
 from simulator.dispatcher.car import CarDispatcher
+from simulator.road.sparse import SparseRoad
 from simulator.vehicle.car import CarParams
 
 
@@ -18,7 +19,7 @@ def main(length: int, lanes: int, speed: int,
          pslow: float, pchange: float):
     # Create a road.
     road_params = RoadParams(speed=speed)
-    road = Road(length=length, lanes_count=lanes, params=road_params)
+    road = SparseRoad(length=length, lanes_count=lanes, params=road_params)
     # Create a dispatcher.
     car_params = CarParams(slow=pslow, change=pchange)
     dispatcher = CarDispatcher(count=dispatch, road=road, params=car_params)
