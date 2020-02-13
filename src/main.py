@@ -3,6 +3,7 @@ import click
 from simulator.road.road import RoadParams
 from simulator.dispatcher.car import CarDispatcher
 from simulator.road.sparse import SparseRoad
+from simulator.simulator import Simulator
 from simulator.vehicle.car import CarParams
 
 
@@ -23,11 +24,11 @@ def main(length: int, lanes: int, speed: int,
     # Create a dispatcher.
     car_params = CarParams(slow=pslow, change=pchange)
     dispatcher = CarDispatcher(count=dispatch, road=road, params=car_params)
+    # Create a simulator.
+    simulator = Simulator(road=road, dispatcher=dispatcher)
     # Run the simulation.
     for i in range(steps):
-        dispatcher.dispatch()
-        road.step()
-        print(f'#{i} -> velocity: {road.getAverageVelocity()}')
+        simulator.step()
 
 
 if __name__ == '__main__':
