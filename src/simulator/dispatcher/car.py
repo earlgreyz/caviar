@@ -8,6 +8,7 @@ class CarDispatcher:
     count: int
     remaining: int
     road: Road
+    params: CarParams
 
     def __init__(self, count: int, road: Road, params: CarParams):
         self.count = count
