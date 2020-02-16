@@ -56,14 +56,6 @@ class Road:
         '''
         raise NotImplementedError
 
-    def getMaxSpeed(self, position: Position) -> int:
-        '''
-        Gets maximum speed at the given position of the road.
-        :param position: position on the road.
-        :return: maximum allowed speed.
-        '''
-        raise NotImplementedError()
-
     def getNextVehicle(self, position: Position) -> typing.Tuple[int, typing.Optional[Vehicle]]:
         '''
         Gets the vehicle in front of a given position.
@@ -71,6 +63,18 @@ class Road:
         :return: position and the vehicle or None.
         '''
         raise NotImplementedError()
+
+    def getMaxSpeed(self, position: Position) -> int:
+        '''
+        Gets maximum speed at the given position of the road.
+        :param position: position on the road.
+        :return: maximum allowed speed.
+        '''
+        next, vehicle = self.getNextVehicle(position=position)
+        if vehicle is None:
+            return self.params.MAX_SPEED
+        else:
+            return min(self.params.MAX_SPEED, next - position[0])
 
     def isProperPosition(self, position: Position) -> bool:
         '''

@@ -1,17 +1,15 @@
 import typing
 
-from sortedcontainers import SortedDict
-
 from simulator.position import Position
 from simulator.road.road import Road, RoadParams
 from simulator.vehicle.vehicle import Vehicle
 
-Lane = SortedDict  # SortedDict[int, typing.Optional[Vehicle]]
+Lane = typing.List[typing.Optional[Vehicle]]
 
 
-class SparseRoad(Road):
+class DenseRoad(Road):
     '''
-    Road implementation for non traffic heavy roads.
+    Road implementation for traffic heavy roads.
     '''
     lanes: typing.List[Lane]
     pending_lanes: typing.List[Lane]
@@ -19,8 +17,11 @@ class SparseRoad(Road):
     def __init__(self, length: int, lanes_count: int, params: typing.Optional[RoadParams] = None):
         super().__init__(length=length, lanes_count=lanes_count, params=params)
         # Initialize lanes.
-        self.lanes = [Lane() for _ in range(self.lanes_count)]
-        self.pending_lanes = [Lane() for _ in range(self.lanes_count)]
+        self.lanes = [self._emptyLane() for _ in range(self.lanes_count)]
+        self.pending_lanes = [self._emptyLane() for _ in range(self.lanes_count)]
+
+    def _emptyLane(self) -> Lane:
+        return [None] * self.length
 
     def addVehicle(self, position: Position, vehicle: Vehicle) -> None:
         x, lane = position
@@ -28,14 +29,13 @@ class SparseRoad(Road):
 
     def getVehicle(self, position: Position) -> typing.Optional[Vehicle]:
         x, lane = position
-        if x in self.lanes[lane]:
-            return self.lanes[lane][x]
-        return None
+        return self.lanes[lane][x]
 
     def getAllVehicles(self) -> typing.Generator[Vehicle, None, None]:
         for lane in self.lanes:
-            for vehicle in lane.values():
-                yield vehicle
+            for vehicle in lane:
+                if vehicle is not None:
+                    yield vehicle
 
     def addPendingVehicle(self, position: Position, vehicle: Vehicle) -> None:
         x, lane = position
@@ -43,12 +43,11 @@ class SparseRoad(Road):
 
     def getNextVehicle(self, position: Position) -> typing.Tuple[int, typing.Optional[Vehicle]]:
         x, lane = position
-        next = self.lanes[lane].bisect_right(x)
-        if next == len(self.lanes[lane]):
-            return (self.length, None)
-        else:
-            return self.lanes[lane].peekitem(next)
+        for i in range(x + 1, self.length):
+            if self.lanes[lane][i] is not None:
+                return i, self.lanes[lane][i]
+        return self.length, None
 
     def _commitLanes(self) -> None:
         self.lanes = self.pending_lanes
-        self.pending_lanes = [Lane() for _ in range(self.lanes_count)]
+        self.pending_lanes = [self._emptyLane() for _ in range(self.lanes_count)]
