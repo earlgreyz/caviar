@@ -5,10 +5,10 @@ from simulator.vehicle.vehicle import Vehicle
 
 
 class RoadParams:
-    MAX_SPEED: int
+    max_speed: int
 
     def __init__(self, speed: int = 5):
-        self.MAX_SPEED = speed
+        self.max_speed = speed
 
 
 class Road:
@@ -72,9 +72,9 @@ class Road:
         '''
         next, vehicle = self.getNextVehicle(position=position)
         if vehicle is None:
-            return self.params.MAX_SPEED
+            return self.params.max_speed
         else:
-            return min(self.params.MAX_SPEED, next - position[0])
+            return min(self.params.max_speed, next - position[0])
 
     def isProperPosition(self, position: Position) -> bool:
         '''

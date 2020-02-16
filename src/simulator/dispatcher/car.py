@@ -28,6 +28,6 @@ class CarDispatcher:
             if self.road.getVehicle(position=position) is not None:
                 continue
             # Place the car.
-            car = Car(position, self.road.params.MAX_SPEED, road=self.road, params=self.params)
+            car = Car(position, self.road.params.max_speed, road=self.road, params=self.params)
             self.road.addVehicle(position=position, vehicle=car)
             self.remaining -= 1

@@ -7,12 +7,12 @@ from simulator.vehicle.vehicle import Vehicle
 
 
 class CarParams:
-    LANE_CHANGE_PROBABILITY: float
-    SLOW_DOWN_PROBABILITY: float
+    lane_change_probability: float
+    slow_down_probability: float
 
     def __init__(self, change: float = .5, slow: float = .5):
-        self.LANE_CHANGE_PROBABILITY = change
-        self.SLOW_DOWN_PROBABILITY = slow
+        self.lane_change_probability = change
+        self.slow_down_probability = slow
 
 
 class Car(Vehicle):
@@ -36,7 +36,7 @@ class Car(Vehicle):
 
     def move(self) -> Position:
         x, lane = self.position
-        if self.velocity > 0 and random.random() <= self.params.SLOW_DOWN_PROBABILITY:
+        if self.velocity > 0 and random.random() <= self.params.slow_down_probability:
             self.velocity -= 1
         else:
             self.velocity = min(self.velocity + 1, self.road.getMaxSpeed(position=self.position))
@@ -62,4 +62,4 @@ class Car(Vehicle):
             if distance <= vehicle.velocity:
                 return False
         # Randomly decide to switch the lane.
-        return random.random() <= self.params.LANE_CHANGE_PROBABILITY
+        return random.random() <= self.params.lane_change_probability

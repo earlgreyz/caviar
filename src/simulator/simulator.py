@@ -10,7 +10,11 @@ class Simulator:
         self.road = road
         self.dispatcher = dispatcher
 
-    def step(self):
+    def step(self) -> None:
+        '''
+        Performs a single step of the simulation.
+        :return: None.
+        '''
         self.dispatcher.dispatch()
         self.road.step()
         print(f'Average velocity: {self.road.getAverageVelocity()}')
