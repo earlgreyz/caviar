@@ -1,19 +1,19 @@
 import random
 
+from simulator.dispatcher.dispatcher import Dispatcher
 from simulator.road.road import Road
 from simulator.vehicle.car import Car, CarParams
 
 
-class CarDispatcher:
+class CarDispatcher(Dispatcher):
     count: int
     remaining: int
-    road: Road
     params: CarParams
 
-    def __init__(self, count: int, road: Road, params: CarParams):
+    def __init__(self, road: Road, count: int, params: CarParams):
+        super().__init__(road=road)
         self.count = count
         self.remaining = 0
-        self.road = road
         self.params = params
 
     def dispatch(self) -> None:

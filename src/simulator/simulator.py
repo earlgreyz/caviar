@@ -1,12 +1,12 @@
-from simulator.dispatcher.car import CarDispatcher
+from simulator.dispatcher.dispatcher import Dispatcher
 from simulator.road.road import Road
 
 
 class Simulator:
     road: Road
-    dispatcher: CarDispatcher
+    dispatcher: Dispatcher
 
-    def __init__(self, road: Road, dispatcher: CarDispatcher):
+    def __init__(self, road: Road, dispatcher: Dispatcher):
         self.road = road
         self.dispatcher = dispatcher
 

@@ -6,7 +6,7 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
 
-class Visualiser:
+class Controller:
     SIZE = 10
     simulator: Simulator
 
