@@ -1,7 +1,8 @@
 import typing
 
 from simulator.position import Position
-from simulator.road.road import Road, RoadParams
+from simulator.road.road import Road
+from simulator.road.speedcontroller import SpeedController
 from simulator.vehicle.vehicle import Vehicle
 
 Lane = typing.List[typing.Optional[Vehicle]]
@@ -14,8 +15,9 @@ class DenseRoad(Road):
     lanes: typing.List[Lane]
     pending_lanes: typing.List[Lane]
 
-    def __init__(self, length: int, lanes_count: int, params: typing.Optional[RoadParams] = None):
-        super().__init__(length=length, lanes_count=lanes_count, params=params)
+    def __init__(self, length: int, lanes_count: int,
+                 controller: typing.Optional[SpeedController] = None):
+        super().__init__(length=length, lanes_count=lanes_count, controller=controller)
         # Initialize lanes.
         self.lanes = [self._emptyLane() for _ in range(self.lanes_count)]
         self.pending_lanes = [self._emptyLane() for _ in range(self.lanes_count)]

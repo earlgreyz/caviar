@@ -1,3 +1,4 @@
 Click==7.0
+intervaltree==3.0.2
 pygame==2.0.0.dev6
 sortedcontainers==2.1.0

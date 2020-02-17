@@ -1,27 +1,22 @@
 import typing
 
 from simulator.position import Position
+from simulator.road.speedcontroller import SpeedController
 from simulator.vehicle.vehicle import Vehicle
 
 
-class RoadParams:
-    max_speed: int
-
-    def __init__(self, speed: int = 5):
-        self.max_speed = speed
-
-
 class Road:
-    params: RoadParams
+    controller: SpeedController
 
     # Road options.
     length: int
     lanes_count: int
 
-    def __init__(self, length: int, lanes_count: int, params: typing.Optional[RoadParams] = None):
-        self.params = params if params is not None else RoadParams()
+    def __init__(self, length: int, lanes_count: int,
+                 controller: typing.Optional[SpeedController] = None):
         self.length = length
         self.lanes_count = lanes_count
+        self.controller = controller if controller is not None else SpeedController()
 
     def addVehicle(self, position: Position, vehicle: Vehicle) -> None:
         '''
@@ -72,9 +67,9 @@ class Road:
         '''
         next, vehicle = self.getNextVehicle(position=position)
         if vehicle is None:
-            return self.params.max_speed
+            return self.controller.getMaxSpeed(position)
         else:
-            return min(self.params.max_speed, next - position[0])
+            return min(self.controller.getMaxSpeed(position), next - position[0])
 
     def isProperPosition(self, position: Position) -> bool:
         '''

@@ -1,9 +1,9 @@
 import click
 
 from simulator.road.dense import DenseRoad
-from simulator.road.road import RoadParams
 from simulator.dispatcher.car import CarDispatcher
 from simulator.road.sparse import SparseRoad
+from simulator.road.speedcontroller import SpeedController
 from simulator.simulator import Simulator
 from simulator.vehicle.car import CarParams
 from controller.controller import Controller
@@ -20,11 +20,11 @@ from controller.controller import Controller
 def main(length: int, lanes: int, speed: int, sparse: bool,
          dispatch: int, pslow: float, pchange: float):
     # Create a road.
-    road_params = RoadParams(speed=speed)
+    speed_controller = SpeedController(max_speed=speed)
     if sparse:
-        road = SparseRoad(length=length, lanes_count=lanes, params=road_params)
+        road = SparseRoad(length=length, lanes_count=lanes, controller=speed_controller)
     else:
-        road = DenseRoad(length=length, lanes_count=lanes, params=road_params)
+        road = DenseRoad(length=length, lanes_count=lanes, controller=speed_controller)
     # Create a dispatcher.
     car_params = CarParams(slow=pslow, change=pchange)
     dispatcher = CarDispatcher(count=dispatch, road=road, params=car_params)
