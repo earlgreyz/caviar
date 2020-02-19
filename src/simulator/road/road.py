@@ -1,6 +1,6 @@
 import typing
 
-from simulator.position import Position
+from simulator.position import Position, inBounds
 from simulator.road.speedcontroller import SpeedController
 from simulator.vehicle.vehicle import Vehicle
 
@@ -77,7 +77,7 @@ class Road:
         :return: if a position is on the road.
         '''
         x, lane = position
-        return lane >= 0 and lane < self.lanes_count and x >= 0 and x < self.length
+        return inBounds(lane, 0, self.lanes_count) and inBounds(x, 0, self.length)
 
     def _commitLanes(self) -> None:
         '''

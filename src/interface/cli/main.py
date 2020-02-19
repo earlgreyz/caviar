@@ -2,15 +2,28 @@ import typing
 import click
 import click_config_file
 
+from interface.cli.obstacleparam import ObstacleParamType, ObstacleValue
+from interface.gui.controller import Controller
+
 from simulator.dispatcher.car import CarDispatcher
+from simulator.position import inBounds
 from simulator.road.dense import DenseRoad
+from simulator.road.road import Road
 from simulator.road.sparse import SparseRoad
 from simulator.road.speedcontroller import SpeedController
 from simulator.simulator import Simulator
 from simulator.vehicle.car import CarParams
 from simulator.vehicle.obstacle import Obstacle
-from interface.cli.obstacleparam import ObstacleParamType, ObstacleValue
-from interface.gui.controller import Controller
+
+
+def _addObstacle(road: Road, obstacle: ObstacleValue) -> None:
+    lane, begin, end = obstacle
+    if not inBounds(lane, 0, road.lanes_count):
+        raise ValueError(f'invalid obstacle, lane {lane} is not on the road')
+    if not inBounds(begin, 0, road.length) or not inBounds(end, 0, road.length):
+        raise ValueError(f'invalid obstacle, position {(begin, end)} is not on the road')
+    for x in range(begin, end + 1):
+        road.addVehicle(Obstacle(position=(x, lane)))
 
 
 @click.command()
@@ -44,16 +57,9 @@ def main(**kwargs):
         road = SparseRoad(length=length, lanes_count=lanes, controller=speed_controller)
     else:
         road = DenseRoad(length=length, lanes_count=lanes, controller=speed_controller)
-
     # Add obstacles.
-    for lane, begin, end in obstacles:
-        if lane < 0 or lane >= lanes or begin < 0 or begin >= length or end < 0 or end >= length:
-            click.secho(f'obstacle "{lane}:{begin}-{end}" not on the road')
-            return
-        for x in range(begin, end + 1):
-            position = (x, lane)
-            road.addVehicle(vehicle=Obstacle(position=position))
-
+    for obstacle in obstacles:
+        _addObstacle(road=road, obstacle=obstacle)
     # Create a dispatcher.
     car_params = CarParams(slow=pslow, change=pchange)
     dispatcher = CarDispatcher(count=dispatch, road=road, params=car_params)
