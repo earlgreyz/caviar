@@ -1,3 +1,4 @@
+import typing
 import click
 import click_config_file
 
@@ -7,6 +8,8 @@ from simulator.road.sparse import SparseRoad
 from simulator.road.speedcontroller import SpeedController
 from simulator.simulator import Simulator
 from simulator.vehicle.car import CarParams
+from simulator.vehicle.obstacle import Obstacle
+from interface.cli.obstacleparam import ObstacleParamType, ObstacleValue
 from interface.gui.controller import Controller
 
 
@@ -17,6 +20,7 @@ from interface.gui.controller import Controller
 @click.option('--sparse', default=False, is_flag=True, help='Use sparse road implementation')
 # Speed controller options.
 @click.option('--max-speed', default=5, help='Road maximum speed')
+@click.option('--obstacle', multiple=True, default=[], type=ObstacleParamType())
 # Dispatcher options.
 @click.option('--dispatch', default=2, help='Maximum number of cars dispatched each step')
 @click.option('--pslow', default=.33, help='Probability a NS-model car will slow down')
@@ -32,6 +36,7 @@ def main(**kwargs):
     dispatch: int = kwargs['dispatch']
     pslow: float = kwargs['pslow']
     pchange: float = kwargs['pchange']
+    obstacles: typing.List[ObstacleValue] = kwargs['obstacle']
 
     # Create a road.
     speed_controller = SpeedController(max_speed=max_speed)
@@ -39,6 +44,15 @@ def main(**kwargs):
         road = SparseRoad(length=length, lanes_count=lanes, controller=speed_controller)
     else:
         road = DenseRoad(length=length, lanes_count=lanes, controller=speed_controller)
+
+    # Add obstacles.
+    for lane, begin, end in obstacles:
+        if lane < 0 or lane >= lanes or begin < 0 or begin >= length or end < 0 or end >= length:
+            click.secho(f'obstacle "{lane}:{begin}-{end}" not on the road')
+            return
+        for x in range(begin, end + 1):
+            position = (x, lane)
+            road.addVehicle(vehicle=Obstacle(position=position))
 
     # Create a dispatcher.
     car_params = CarParams(slow=pslow, change=pchange)
