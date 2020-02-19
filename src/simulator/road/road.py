@@ -18,7 +18,7 @@ class Road:
         self.lanes_count = lanes_count
         self.controller = controller if controller is not None else SpeedController()
 
-    def addVehicle(self, position: Position, vehicle: Vehicle) -> None:
+    def addVehicle(self, vehicle: Vehicle) -> None:
         '''
         Adds a new vehicle to the road.
         :param position: position on the road.
@@ -42,7 +42,7 @@ class Road:
         '''
         raise NotImplementedError()
 
-    def addPendingVehicle(self, position: Position, vehicle: Vehicle) -> None:
+    def addPendingVehicle(self, vehicle: Vehicle) -> None:
         '''
         Adds the vehicle to the road which will be added on the next commit.
         :param position: position on the road.
@@ -68,8 +68,7 @@ class Road:
         next, vehicle = self.getNextVehicle(position=position)
         if vehicle is None:
             return self.controller.getMaxSpeed(position)
-        else:
-            return min(self.controller.getMaxSpeed(position), next - position[0])
+        return min(self.controller.getMaxSpeed(position), next - position[0] - 1)
 
     def isProperPosition(self, position: Position) -> bool:
         '''
@@ -95,9 +94,9 @@ class Road:
         :return: None.
         '''
         for vehicle in self.getAllVehicles():
-            x, i = f(vehicle)
+            x, _ = f(vehicle)
             if x < self.length:
-                self.addPendingVehicle(position=(x, i), vehicle=vehicle)
+                self.addPendingVehicle(vehicle=vehicle)
         self._commitLanes()
 
     def step(self) -> None:
@@ -115,3 +114,8 @@ class Road:
             velocity += vehicle.velocity
             count += 1
         return float(velocity) / count if count > 0 else 0.
+
+
+class CollisionError(RuntimeError):
+    '''Raised when a collision on the road occurs.'''
+    pass

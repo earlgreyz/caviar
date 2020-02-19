@@ -7,7 +7,7 @@ from simulator.road.sparse import SparseRoad
 from simulator.road.speedcontroller import SpeedController
 from simulator.simulator import Simulator
 from simulator.vehicle.car import CarParams
-from interface.controller import Controller
+from interface.gui.controller import Controller
 
 
 @click.command()
@@ -39,6 +39,7 @@ def main(**kwargs):
         road = SparseRoad(length=length, lanes_count=lanes, controller=speed_controller)
     else:
         road = DenseRoad(length=length, lanes_count=lanes, controller=speed_controller)
+
     # Create a dispatcher.
     car_params = CarParams(slow=pslow, change=pchange)
     dispatcher = CarDispatcher(count=dispatch, road=road, params=car_params)

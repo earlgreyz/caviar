@@ -30,5 +30,5 @@ class CarDispatcher(Dispatcher):
             # Place the car.
             speed = self.road.controller.getMaxSpeed(position)
             car = Car(position, velocity=speed, road=self.road, params=self.params)
-            self.road.addVehicle(position=position, vehicle=car)
+            self.road.addVehicle(vehicle=car)
             self.remaining -= 1

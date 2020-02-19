@@ -58,7 +58,7 @@ class Car(Vehicle):
         # Check if the distance to the previous vehicle is not smaller than the velocity.
         next, vehicle = self.road.getNextVehicle(position=destination)
         if vehicle is not None:
-            distance = x - next
+            distance = next - x
             if distance <= vehicle.velocity:
                 return False
         # Randomly decide to switch the lane.
