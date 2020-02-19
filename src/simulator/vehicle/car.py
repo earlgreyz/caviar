@@ -39,7 +39,8 @@ class Car(Vehicle):
         if self.velocity > 0 and random.random() <= self.params.slow_down_probability:
             self.velocity -= 1
         else:
-            self.velocity = min(self.velocity + 1, self.road.getMaxSpeed(position=self.position))
+            self.velocity += 1
+        self.velocity = min(self.velocity, self.road.getMaxSpeed(position=self.position))
         self.position = x + self.velocity, lane
         return self.position
 
