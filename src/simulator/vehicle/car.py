@@ -59,7 +59,7 @@ class Car(Vehicle):
         next, vehicle = self.road.getNextVehicle(position=destination)
         if vehicle is not None:
             distance = next - x
-            if distance <= vehicle.velocity:
+            if distance <= self.velocity:
                 return False
         # Randomly decide to switch the lane.
         return random.random() <= self.params.lane_change_probability
