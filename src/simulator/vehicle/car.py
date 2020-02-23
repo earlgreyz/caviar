@@ -4,6 +4,7 @@ import typing
 from simulator.position import Position
 from simulator.road.road import Road
 from simulator.vehicle.vehicle import Vehicle
+from util.random import shuffled
 
 
 class CarParams:
@@ -28,10 +29,12 @@ class Car(Vehicle):
     def beforeMove(self) -> Position:
         self.last_position = self.position
         x, lane = self.position
-        if self._changeLane(destination=(x, lane + 1)):
-            self.position = (x, lane + 1)
-        elif self._changeLane(destination=(x, lane - 1)):
-            self.position = (x, lane - 1)
+        # Try to switch lanes in random order.
+        for change in shuffled([-1, 1]):
+            destination = (x, lane + change)
+            if self._changeLane(destination):
+                self.position = destination
+                break
         return self.position
 
     def move(self) -> Position:
@@ -44,13 +47,12 @@ class Car(Vehicle):
         self.position = x + self.velocity, lane
         return self.position
 
-    def _changeLane(self, destination: Position) -> bool:
+    def _canChangeLane(self, destination: Position) -> bool:
+        return self.road.isProperPosition(position=destination) and \
+               self.road.getVehicle(position=destination) is None
+
+    def _shouldChangeLane(self, destination: Position) -> bool:
         x, _ = self.position
-        # Check if it is possible to change the lane.
-        if not self.road.isProperPosition(position=destination):
-            return False
-        if self.road.getVehicle(position=destination) is not None:
-            return False
         # Check if the speed limit on the destination lane is higher.
         limit = self.road.getMaxSpeed(self.position)
         destination_limit = self.road.getMaxSpeed(position=destination)
@@ -59,8 +61,11 @@ class Car(Vehicle):
         # Check if the distance to the previous vehicle is not smaller than the velocity.
         next, vehicle = self.road.getNextVehicle(position=destination)
         if vehicle is not None:
-            distance = next - x
-            if distance <= self.velocity:
+            if next - x <= self.velocity:
                 return False
-        # Randomly decide to switch the lane.
+        return True
+
+    def _changeLane(self, destination: Position) -> bool:
+        if not self._canChangeLane(destination) or not self._shouldChangeLane(destination):
+            return False
         return random.random() <= self.params.lane_change_probability
