@@ -4,7 +4,7 @@ import typing
 from simulator.position import Position
 from simulator.road.road import Road
 from simulator.vehicle.vehicle import Vehicle
-from util.random import shuffled
+from util.rand import shuffled
 
 
 class CarParams:
