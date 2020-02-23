@@ -1,6 +1,10 @@
 import click
 import typing
 
+from simulator.position import inBounds
+from simulator.road.road import Road
+from simulator.vehicle.obstacle import Obstacle
+
 ObstacleValue = typing.Tuple[int, int, int]
 
 
@@ -31,3 +35,13 @@ class ObstacleParamType(click.ParamType):
             param,
             ctx,
         )
+
+
+def addObstacle(road: Road, obstacle: ObstacleValue) -> None:
+    lane, begin, end = obstacle
+    if not inBounds(lane, 0, road.lanes_count):
+        raise ValueError(f'invalid obstacle, lane {lane} is not on the road')
+    if not inBounds(begin, 0, road.length) or not inBounds(end, 0, road.length):
+        raise ValueError(f'invalid obstacle, position {(begin, end)} is not on the road')
+    for x in range(begin, end + 1):
+        road.addVehicle(Obstacle(position=(x, lane)))
