@@ -6,10 +6,12 @@ from simulator.statistics import Statistics
 class Simulator:
     road: Road
     dispatcher: Dispatcher
+    steps: int
 
     def __init__(self, road: Road, dispatcher: Dispatcher):
         self.road = road
         self.dispatcher = dispatcher
+        self.steps = 0
 
     def step(self) -> Statistics:
         '''
@@ -18,4 +20,7 @@ class Simulator:
         '''
         self.dispatcher.dispatch()
         self.road.step()
-        return self.road.getStatistics()
+        self.steps += 1
+        statistics = self.road.getStatistics()
+        statistics['steps'] = self.steps
+        return statistics

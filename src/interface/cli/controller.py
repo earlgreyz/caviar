@@ -17,4 +17,4 @@ class Controller:
             for _ in bar:
                 statistics = self.simulator.step()
                 ss.append(statistics)
-        print(ss[-1].average_velocity)
+        print(ss[-1]['average_velocity'])

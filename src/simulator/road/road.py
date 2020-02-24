@@ -110,7 +110,7 @@ class Road:
 
     # Statistics
     def getStatistics(self) -> Statistics:
-        return Statistics(
+        return dict(
             average_velocity=self._getAverageVelocity(),
         )
 

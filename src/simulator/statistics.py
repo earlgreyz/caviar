@@ -1,5 +1,3 @@
-class Statistics:
-    average_velocity: float
+import typing
 
-    def __init__(self, average_velocity: float):
-        self.average_velocity = average_velocity
+Statistics = typing.Dict[str, typing.Any]
