@@ -2,8 +2,9 @@ import typing
 import click
 import click_config_file
 
-from interface.cli.obstacle import ObstacleParamType, ObstacleValue, addObstacle
-from interface.gui.controller import Controller
+from interface.obstacle import ObstacleParamType, ObstacleValue, addObstacle
+from interface.gui.controller import Controller as GUIController
+from interface.cli.controller import Controller as CLIController
 
 from simulator.dispatcher.car import CarDispatcher
 from simulator.road.dense import DenseRoad
@@ -28,7 +29,7 @@ from simulator.vehicle.car import CarParams
 # Configuration file option.
 @click_config_file.configuration_option()
 @click.pass_context
-def cli(ctx: click.Context, **kwargs) -> None:
+def command(ctx: click.Context, **kwargs) -> None:
     # Extract options.
     length: int = kwargs['length']
     lanes: int = kwargs['lanes']
@@ -54,19 +55,18 @@ def cli(ctx: click.Context, **kwargs) -> None:
     ctx.obj = Simulator(road=road, dispatcher=dispatcher)
 
 
-@cli.command()
+@command.command()
 @click.option('--step', default=100, help='Animation time of a single simulation step (ms)')
 @click.option('--fps', default=30, help='Animation frames per second')
 @click.pass_context
 def gui(ctx: click.Context, step: int, fps: int) -> None:
-    controller = Controller(simulator=ctx.obj)
+    controller = GUIController(simulator=ctx.obj)
     controller.run(speed=step, refresh=fps)
 
 
-@cli.command()
+@command.command()
 @click.option('--steps', default=1000, help='Number of simulation steps to run')
 @click.pass_context
-def simulate(ctx: click.Context, steps: int):
-    simulator: Simulator = ctx.obj
-    for _ in range(steps):
-        simulator.step()
+def cli(ctx: click.Context, steps: int):
+    controller = CLIController(simulator=ctx.obj)
+    controller.run(steps=steps)

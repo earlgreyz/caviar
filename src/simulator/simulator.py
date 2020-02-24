@@ -1,5 +1,6 @@
 from simulator.dispatcher.dispatcher import Dispatcher
 from simulator.road.road import Road
+from simulator.statistics import Statistics
 
 
 class Simulator:
@@ -10,11 +11,11 @@ class Simulator:
         self.road = road
         self.dispatcher = dispatcher
 
-    def step(self) -> None:
+    def step(self) -> Statistics:
         '''
         Performs a single step of the simulation.
         :return: None.
         '''
         self.dispatcher.dispatch()
         self.road.step()
-        print(f'Average velocity: {self.road.getAverageVelocity()}')
+        return self.road.getStatistics()
