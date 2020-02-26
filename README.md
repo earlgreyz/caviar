@@ -17,7 +17,7 @@ $ source venv/bin/activate
 ```
 
 ## Running the simulation
-The simulation can be run through the `main.py` script in  the
+The simulation can be run through the `main.py` script in the
 `src/` directory of this project.
 ```sh
 (venv) $ python src/main.py
@@ -29,7 +29,28 @@ To see the list of all possible parameters to change use `--help`.
 ```
 
 ### Example usage
-Change the road length to `200` and the probability of car slowing down to `0.2`.
+Simulation can run in two different modes:
+* `gui` displaying animation of the vehicles
+* `cli` running for a specific number of cycles and showing only statistics
+
+#### GUI
+You can see `gui` specific parameters by running
 ```sh
-(venv) $ python src/main.py --length 200 --pslow .2
+(venv) $ python src/main.py gui --help
+```
+
+For example to change the animation time of a single step to 200ms
+```sh
+(venv) $ python src/main.py gui --step 200
+```
+
+#### CLI
+You can see `cli` specific parameters by running
+```sh
+(venv) $ python src/main.py cli --help
+```
+
+For example to change the number of steps to 1000
+```sh
+(venv) $ python src/main.py cli --steps 1000
 ```
