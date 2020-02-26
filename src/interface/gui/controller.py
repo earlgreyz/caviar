@@ -1,15 +1,15 @@
 import pygame
 
+from interface.gui.colors import Colors, gradient
 from simulator.simulator import Simulator
 from simulator.statistics import Statistics
 from simulator.vehicle.obstacle import Obstacle
 from simulator.vehicle.vehicle import Vehicle
 
-CL_OBSTACLE = (67, 67, 78)
-CL_ROAD = (212, 212, 212)
-CL_VEHICLE = (27, 176, 66)
-CL_BACKGROUND = (255, 255, 255)
-CL_TEXT = (0, 0, 0)
+CL_OBSTACLE = Colors.DARK
+CL_ROAD = Colors.LIGHT
+CL_BACKGROUND = Colors.WHITE
+CL_TEXT = Colors.BLACK
 
 
 class Controller:
@@ -67,7 +67,9 @@ class Controller:
         bx, by = vehicle.position
         x, y = ax + (bx - ax) * factor, ay + (by - ay) * factor
         rect = (x * self.SIZE, y * self.SIZE, self.SIZE, self.SIZE)
-        pygame.draw.ellipse(self.screen, CL_VEHICLE, rect)
+        limit = self.simulator.road.getMaxSpeed(vehicle.position)
+        color = gradient(Colors.RED, Colors.GREEN, .0 if limit == 0 else vehicle.velocity / limit)
+        pygame.draw.ellipse(self.screen, color, rect)
 
     def _updateEvents(self) -> None:
         for event in pygame.event.get():
