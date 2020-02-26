@@ -1,6 +1,7 @@
 import typing
 import click
 import click_config_file
+import yaml
 
 from interface.obstacle import ObstacleParamType, ObstacleValue, addObstacle
 from interface.gui.controller import Controller as GUIController
@@ -12,6 +13,12 @@ from simulator.road.sparse import SparseRoad
 from simulator.road.speedcontroller import SpeedController
 from simulator.simulator import Simulator
 from simulator.vehicle.car import CarParams
+
+
+def configProvider(file_path: str, cmd: str) -> typing.Dict[str, typing.Any]:
+    print(f'Loading {file_path} of {cmd}')
+    with open(file_path) as data:
+        return yaml.safe_load(data)['simulation']
 
 
 @click.group()
@@ -27,7 +34,7 @@ from simulator.vehicle.car import CarParams
 @click.option('--pslow', default=.33, help='Probability a NS-model car will slow down')
 @click.option('--pchange', default=.33, help='Probability a NS-model car will change a lane')
 # Configuration file option.
-@click_config_file.configuration_option()
+@click_config_file.configuration_option(provider=configProvider, implicit=False)
 @click.pass_context
 def command(ctx: click.Context, **kwargs) -> None:
     # Extract options.

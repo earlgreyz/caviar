@@ -28,6 +28,23 @@ To see the list of all possible parameters to change use `--help`.
 (venv) $ python src/main.py --help
 ```
 
+The simulation parameters can also be loaded from a yaml configuration file
+```sh
+(venv) $ python src/main.py --config config.yaml
+```
+
+```yaml
+# config.yaml
+simulation:
+  length: 150
+  lanes: 3
+  max-speed: 7
+  obstacles:
+    - "0:0-10"
+    - "2:0-10"
+  dispatch: 1
+```
+
 ### Example usage
 Simulation can run in two different modes:
 * `gui` displaying animation of the vehicles
