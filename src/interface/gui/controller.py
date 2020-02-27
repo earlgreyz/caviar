@@ -104,7 +104,9 @@ class Controller:
         pygame.draw.rect(self.screen, CL_BACKGROUND, rect)
         font = pygame.font.Font(pygame.font.get_default_font(), self.SIZE)
         text = font.render(
-            'Steps={steps}, Velocity={average_velocity:.2f}'.format(**self.statistics),
+            'Steps={steps} | Velocity={average_velocity:.2f} | '
+            'Conventional Velocity={average_velocity_conventional:.2f} | '
+            'Autonomous Velocity={average_velocity_autonomous:.2f}'.format(**self.statistics),
             True, CL_TEXT)
         rect = text.get_rect()
         rect.center = (self.width // 2, self.height + self.STATS_SIZE // 2)

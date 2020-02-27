@@ -56,3 +56,7 @@ class AutonomousCar(Vehicle):
         if isinstance(vehicle, AutonomousCar):
             distance += vehicle.velocity
         return min(limit, distance - 1)
+
+
+def isAutonomous(vehicle: Vehicle) -> bool:
+    return isinstance(vehicle, AutonomousCar)

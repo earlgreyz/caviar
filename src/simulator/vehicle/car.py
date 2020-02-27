@@ -69,3 +69,7 @@ class Car(Vehicle):
         if not self._canChangeLane(destination) or not self._shouldChangeLane(destination):
             return False
         return random.random() <= self.params.lane_change_probability
+
+
+def isConventional(vehicle: Vehicle) -> bool:
+    return isinstance(vehicle, Car)

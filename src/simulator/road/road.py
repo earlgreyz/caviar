@@ -2,7 +2,6 @@ import typing
 
 from simulator.position import Position, inBounds
 from simulator.road.speedcontroller import SpeedController
-from simulator.statistics import Statistics
 from simulator.vehicle.vehicle import Vehicle
 
 
@@ -108,15 +107,12 @@ class Road:
         self._updateLanes(lambda vehicle: vehicle.beforeMove())
         self._updateLanes(lambda vehicle: vehicle.move())
 
-    # Statistics
-    def getStatistics(self) -> Statistics:
-        return dict(
-            average_velocity=self._getAverageVelocity(),
-        )
+    def getAverageVelocity(self) -> float:
+        return self.getAverageVelocityFiltered(lambda _: True)
 
-    def _getAverageVelocity(self) -> float:
+    def getAverageVelocityFiltered(self, predicate: typing.Callable[[Vehicle], bool]) -> float:
         velocity, count = 0, 0
-        for vehicle in self.getAllVehicles():
+        for vehicle in filter(predicate, self.getAllVehicles()):
             velocity += vehicle.velocity
             count += 1
         return float(velocity) / count if count > 0 else 0.

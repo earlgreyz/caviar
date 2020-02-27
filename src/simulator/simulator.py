@@ -1,6 +1,8 @@
 from simulator.dispatcher.dispatcher import Dispatcher
 from simulator.road.road import Road
 from simulator.statistics import Statistics
+from simulator.vehicle.autonomous import isAutonomous
+from simulator.vehicle.car import isConventional
 
 
 class Simulator:
@@ -21,6 +23,9 @@ class Simulator:
         self.dispatcher.dispatch()
         self.road.step()
         self.steps += 1
-        statistics = self.road.getStatistics()
-        statistics['steps'] = self.steps
-        return statistics
+        return dict(
+            average_velocity=self.road.getAverageVelocity(),
+            average_velocity_autonomous=self.road.getAverageVelocityFiltered(isAutonomous),
+            average_velocity_conventional=self.road.getAverageVelocityFiltered(isConventional),
+            steps=self.steps,
+        )
