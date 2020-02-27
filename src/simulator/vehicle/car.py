@@ -11,7 +11,7 @@ class CarParams:
     lane_change_probability: float
     slow_down_probability: float
 
-    def __init__(self, change: float = .5, slow: float = .5):
+    def __init__(self, change: float = .5, slow: float = .2):
         self.lane_change_probability = change
         self.slow_down_probability = slow
 

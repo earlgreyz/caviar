@@ -31,8 +31,8 @@ def configProvider(file_path: str, cmd: str) -> typing.Dict[str, typing.Any]:
 @click.option('--obstacles', multiple=True, default=[], type=ObstacleParamType())
 # Dispatcher options.
 @click.option('--dispatch', default=2, help='Maximum number of cars dispatched each step')
-@click.option('--pslow', default=.33, help='Probability a NS-model car will slow down')
-@click.option('--pchange', default=.33, help='Probability a NS-model car will change a lane')
+@click.option('--pslow', default=.2, help='Probability a NS-model car will slow down')
+@click.option('--pchange', default=.5, help='Probability a NS-model car will change a lane')
 # Configuration file option.
 @click_config_file.configuration_option(provider=configProvider, implicit=False)
 @click.pass_context

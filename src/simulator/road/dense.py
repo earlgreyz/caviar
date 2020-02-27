@@ -37,7 +37,7 @@ class DenseRoad(Road):
 
     def getAllVehicles(self) -> typing.Generator[Vehicle, None, None]:
         for lane in self.lanes:
-            for vehicle in lane:
+            for vehicle in reversed(lane):
                 if vehicle is not None:
                     yield vehicle
 

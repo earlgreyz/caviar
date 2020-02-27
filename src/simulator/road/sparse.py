@@ -38,7 +38,7 @@ class SparseRoad(Road):
 
     def getAllVehicles(self) -> typing.Generator[Vehicle, None, None]:
         for lane in self.lanes:
-            for vehicle in lane.values():
+            for vehicle in reversed(lane.values()):
                 yield vehicle
 
     def addPendingVehicle(self, vehicle: Vehicle) -> None:
