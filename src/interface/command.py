@@ -7,7 +7,7 @@ from interface.obstacle import ObstacleParamType, ObstacleValue, addObstacle
 from interface.gui.controller import Controller as GUIController
 from interface.cli.controller import Controller as CLIController
 
-from simulator.dispatcher.car import CarDispatcher
+from simulator.dispatcher.mixed import MixedDispatcher
 from simulator.road.dense import DenseRoad
 from simulator.road.sparse import SparseRoad
 from simulator.road.speedcontroller import SpeedController
@@ -30,7 +30,8 @@ def configProvider(file_path: str, cmd: str) -> typing.Dict[str, typing.Any]:
 @click.option('--max-speed', default=5, help='Road maximum speed')
 @click.option('--obstacles', multiple=True, default=[], type=ObstacleParamType())
 # Dispatcher options.
-@click.option('--dispatch', default=2, help='Maximum number of cars dispatched each step')
+@click.option('--dispatch', default=6, help='Maximum number of cars dispatched each step')
+@click.option('--penetration', default=.5, help='Penetration rate of CAV')
 @click.option('--pslow', default=.2, help='Probability a NS-model car will slow down')
 @click.option('--pchange', default=.5, help='Probability a NS-model car will change a lane')
 # Configuration file option.
@@ -43,6 +44,7 @@ def command(ctx: click.Context, **kwargs) -> None:
     sparse: bool = kwargs['sparse']
     max_speed: int = kwargs['max_speed']
     dispatch: int = kwargs['dispatch']
+    penetration: float = kwargs['penetration']
     pslow: float = kwargs['pslow']
     pchange: float = kwargs['pchange']
     obstacles: typing.List[ObstacleValue] = kwargs['obstacles']
@@ -57,7 +59,8 @@ def command(ctx: click.Context, **kwargs) -> None:
         addObstacle(road=road, obstacle=obstacle)
     # Create a dispatcher.
     car_params = CarParams(slow=pslow, change=pchange)
-    dispatcher = CarDispatcher(count=dispatch, road=road, params=car_params)
+    dispatcher = MixedDispatcher(
+        count=dispatch, road=road, penetration=penetration, params=car_params)
     # Create a simulator.
     ctx.obj = Simulator(road=road, dispatcher=dispatcher)
 

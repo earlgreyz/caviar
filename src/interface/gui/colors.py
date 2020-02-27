@@ -10,6 +10,8 @@ class Colors:
     LIGHT = (212, 212, 212)
     GREEN = (27, 176, 66)
     RED = (255, 105, 97)
+    PURPLE = (150, 111, 214)
+    BLUE = (62, 84, 161)
 
 
 def gradient(start: Color, end: Color, p: float) -> Color:

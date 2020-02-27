@@ -1,8 +1,9 @@
 import pygame
 
-from interface.gui.colors import Colors, gradient
+from interface.gui.colors import Colors, gradient, Color
 from simulator.simulator import Simulator
 from simulator.statistics import Statistics
+from simulator.vehicle.autonomous import AutonomousCar
 from simulator.vehicle.obstacle import Obstacle
 from simulator.vehicle.vehicle import Vehicle
 
@@ -67,9 +68,16 @@ class Controller:
         bx, by = vehicle.position
         x, y = ax + (bx - ax) * factor, ay + (by - ay) * factor
         rect = (x * self.SIZE, y * self.SIZE, self.SIZE, self.SIZE)
+        pygame.draw.ellipse(self.screen, self._getVehicleColor(vehicle), rect)
+
+    def _getVehicleColor(self, vehicle: Vehicle) -> Color:
         limit = self.simulator.road.getMaxSpeed(vehicle.position)
-        color = gradient(Colors.RED, Colors.GREEN, .0 if limit == 0 else vehicle.velocity / limit)
-        pygame.draw.ellipse(self.screen, color, rect)
+        if isinstance(vehicle, AutonomousCar):
+            start, end = Colors.PURPLE, Colors.BLUE
+        else:
+            start, end = Colors.RED, Colors.GREEN
+        color = gradient(start, end, .0 if limit == 0 else vehicle.velocity / limit)
+        return color
 
     def _updateEvents(self) -> None:
         for event in pygame.event.get():
