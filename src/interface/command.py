@@ -1,3 +1,4 @@
+import random
 import typing
 import click
 import click_config_file
@@ -34,6 +35,8 @@ def configProvider(file_path: str, cmd: str) -> typing.Dict[str, typing.Any]:
 @click.option('--penetration', default=.5, help='Penetration rate of CAV')
 @click.option('--pslow', default=.2, help='Probability a NS-model car will slow down')
 @click.option('--pchange', default=.5, help='Probability a NS-model car will change a lane')
+# Other oprtions.
+@click.option('--seed', type=int, help='Seed for the RNG')
 # Configuration file option.
 @click_config_file.configuration_option(provider=configProvider, implicit=False)
 @click.pass_context
@@ -48,6 +51,10 @@ def command(ctx: click.Context, **kwargs) -> None:
     pslow: float = kwargs['pslow']
     pchange: float = kwargs['pchange']
     obstacles: typing.List[ObstacleValue] = kwargs['obstacles']
+    seed: typing.Optional[int] = kwargs['seed']
+    # Initialize random number generator.
+    if seed is not None:
+        random.seed(seed)
     # Create a road.
     speed_controller = SpeedController(max_speed=max_speed)
     if sparse:
