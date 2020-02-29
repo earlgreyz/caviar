@@ -43,7 +43,7 @@ class Car(Vehicle):
             self.velocity -= 1
         else:
             self.velocity += 1
-        self.velocity = min(self.velocity, self.road.getMaxSpeed(position=self.position))
+        self.velocity = min(self.velocity, self._getMaxSpeed(position=self.position))
         self.position = x + self.velocity, lane
         return self.position
 
@@ -54,8 +54,8 @@ class Car(Vehicle):
     def _shouldChangeLane(self, destination: Position) -> bool:
         x, _ = self.position
         # Check if the speed limit on the destination lane is higher.
-        limit = self.road.getMaxSpeed(self.position)
-        destination_limit = self.road.getMaxSpeed(position=destination)
+        limit = self._getMaxSpeed(self.position)
+        destination_limit = self._getMaxSpeed(position=destination)
         if destination_limit <= limit:
             return False
         # Check if the distance to the previous vehicle is not smaller than the velocity.
@@ -69,6 +69,14 @@ class Car(Vehicle):
         if not self._canChangeLane(destination) or not self._shouldChangeLane(destination):
             return False
         return random.random() <= self.params.lane_change_probability
+
+    def _getMaxSpeed(self, position: Position) -> int:
+        x, _ = position
+        limit = self.road.controller.getMaxSpeed(position=position)
+        next, vehicle = self.road.getNextVehicle(position=position)
+        if vehicle is None:
+            return limit
+        return min(limit, next - x - 1)
 
 
 def isConventional(vehicle: Vehicle) -> bool:

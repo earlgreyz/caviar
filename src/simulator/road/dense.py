@@ -25,7 +25,7 @@ class DenseRoad(Road):
     def _emptyLane(self) -> Lane:
         return [None] * self.length
 
-    def addVehicle(self,  vehicle: Vehicle) -> None:
+    def addVehicle(self, vehicle: Vehicle) -> None:
         x, lane = vehicle.position
         if x in self.lanes[lane]:
             raise CollisionError()
@@ -53,6 +53,13 @@ class DenseRoad(Road):
             if self.lanes[lane][i] is not None:
                 return i, self.lanes[lane][i]
         return self.length, None
+
+    def getPreviousVehicle(self, position: Position) -> typing.Tuple[int, typing.Optional[Vehicle]]:
+        x, lane = position
+        for i in range(x - 1, -1, -1):
+            if self.lanes[lane][i] is not None:
+                return i, self.lanes[lane][i]
+        return -1, None
 
     def _commitLanes(self) -> None:
         self.lanes = self.pending_lanes

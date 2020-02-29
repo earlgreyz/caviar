@@ -15,12 +15,12 @@ class AutonomousCar(Vehicle):
         x, lane = self.position
         # Find the best lane change.
         best_change = 0
-        best_limit = self.road.getMaxSpeed(position=self.position)
+        best_limit = self._getMaxSpeed(position=self.position)
         for change in [-1, 1]:
             destination = (x, lane + change)
             if not self._canChangeLane(destination) or not self._shouldChangeLane(destination):
                 continue
-            limit = self.road.getMaxSpeed(position=destination)
+            limit = self._getMaxSpeed(position=destination)
             if limit > best_limit:
                 best_change, best_limit = change, limit
         # Switch the lanes.
@@ -29,7 +29,7 @@ class AutonomousCar(Vehicle):
 
     def move(self) -> Position:
         x, lane = self.position
-        self.velocity = min(self.velocity + 1, self.road.getMaxSpeed(position=self.position))
+        self.velocity = min(self.velocity + 1, self._getMaxSpeed(position=self.position))
         self.position = x + self.velocity, lane
         return self.position
 
@@ -48,7 +48,7 @@ class AutonomousCar(Vehicle):
 
     def _getMaxSpeed(self, position: Position) -> int:
         x, _ = position
-        limit = self.road.controller.getMaxSpeed(position)
+        limit = self.road.controller.getMaxSpeed(position=position)
         next, vehicle = self.road.getNextVehicle(position=position)
         if vehicle is None:
             return limit

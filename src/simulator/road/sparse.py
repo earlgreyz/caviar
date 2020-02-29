@@ -51,9 +51,19 @@ class SparseRoad(Road):
         x, lane = position
         next = self.lanes[lane].bisect_right(x)
         if next == len(self.lanes[lane]):
-            return (self.length, None)
+            return self.length, None
         else:
             return self.lanes[lane].peekitem(next)
+
+    def getPreviousVehicle(self, position: Position) -> typing.Tuple[int, typing.Optional[Vehicle]]:
+        x, lane = position
+        next = self.lanes[lane].bisect_left(x - 1)
+        if next == len(self.lanes[lane]):
+            return -1, None
+        vx, vehicle = self.lanes[lane].peekitem(next)
+        if vx < x:
+            return vx, vehicle
+        return -1, None
 
     def _commitLanes(self) -> None:
         self.lanes = self.pending_lanes
