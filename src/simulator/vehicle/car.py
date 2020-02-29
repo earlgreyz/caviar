@@ -58,11 +58,15 @@ class Car(Vehicle):
         destination_limit = self._getMaxSpeed(position=destination)
         if destination_limit <= limit:
             return False
-        # Check if the distance to the previous vehicle is not smaller than the velocity.
+        # Check if the distance to the next vehicle is not smaller than the velocity.
         next, vehicle = self.road.getNextVehicle(position=destination)
-        if vehicle is not None:
-            if next - x <= self.velocity:
-                return False
+        if vehicle is not None and next - x <= self.velocity:
+            return False
+        # Check if the distance to the previous vehicle is not smaller than road max speed.
+        road_limit = self.road.controller.getMaxSpeed(position=destination)
+        previous, vehicle = self.road.getPreviousVehicle(position=destination)
+        if vehicle is not None and x - previous <= road_limit:
+            return False
         return True
 
     def _changeLane(self, destination: Position) -> bool:

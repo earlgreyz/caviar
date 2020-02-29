@@ -44,6 +44,22 @@ class AutonomousCar(Vehicle):
         destination_limit = self._getMaxSpeed(position=destination)
         if destination_limit <= limit:
             return False
+        # Check if the distance to the next vehicle is not smaller than the velocity.
+        next, vehicle = self.road.getNextVehicle(position=destination)
+        if vehicle is not None:
+            distance = next - x
+            if isinstance(vehicle, AutonomousCar):
+                distance += vehicle.velocity
+            if distance <= self.velocity:
+                return False
+        # Check if the distance to the previous vehicle is not smaller than road max speed.
+        previous, vehicle = self.road.getPreviousVehicle(position=destination)
+        if vehicle is not None:
+            limit = self.road.controller.getMaxSpeed(position=destination)
+            if isinstance(vehicle, AutonomousCar):
+                limit = vehicle.velocity
+            if x - previous <= limit:
+                return False
         return True
 
     def _getMaxSpeed(self, position: Position) -> int:
