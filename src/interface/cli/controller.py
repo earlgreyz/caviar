@@ -12,8 +12,8 @@ class Controller:
         self.simulator = simulator
 
     def run(self, steps: int):
-        statistics: typing.Optional[Statistics] = None
+        statistics: typing.List[Statistics] = []
         with click.progressbar(range(steps), steps) as bar:
             for _ in bar:
-                statistics = self.simulator.step()
+                statistics.append(self.simulator.step())
         print(statistics)
