@@ -3,6 +3,7 @@ import random
 from simulator.dispatcher.dispatcher import Dispatcher
 from simulator.road.road import Road
 from simulator.vehicle.autonomous import AutonomousCar
+from util.rand import shuffled
 
 
 class AutonomousDispatcher(Dispatcher):
@@ -16,9 +17,7 @@ class AutonomousDispatcher(Dispatcher):
 
     def dispatch(self) -> None:
         self.remaining += random.randint(0, self.count)
-        lanes = list(range(self.road.lanes_count))
-        random.shuffle(lanes)
-        for lane in lanes:
+        for lane in shuffled(range(self.road.lanes_count)):
             if self.remaining <= 0:
                 return
             # Check if position is not occupied.
