@@ -3,26 +3,37 @@ import unittest
 from simulator.vehicle.vehicle import Vehicle
 
 
+def implementsVehicle(cls):
+    assert hasattr(cls, 'getVehicle') and callable(getattr(cls, 'getVehicle'))
+
+    def test(self: cls):
+        vehicle: Vehicle = self.getVehicle()
+        position = vehicle.position
+        try:
+            vehicle.beforeMove()
+            vehicle.move()
+        except NotImplementedError:
+            self.fail('Vehicle interface not implemented')
+        self.assertEqual(vehicle.last_position, position, 'Last position differs')
+
+    cls.test_implementsVehicle = test
+    return cls
+
+
 class TestVehicle(unittest.TestCase):
     def test_init(self):
+        position = (42, 2)
         # Default velocity.
-        vehicle = Vehicle(position=(42, 2))
+        vehicle = Vehicle(position=position)
         self.assertEqual(vehicle.velocity, 0, 'velocity not initialized')
-        x, lane = vehicle.position
-        self.assertEqual(x, 42, 'position x differs')
-        self.assertEqual(lane, 2, 'position lane differs')
-        x, lane = vehicle.last_position
-        self.assertEqual(x, 42, 'last position x differs')
-        self.assertEqual(lane, 2, 'last position lane differs')
+        self.assertEqual(vehicle.position, position, 'positions differs')
+        self.assertEqual(vehicle.last_position, position, 'last position not initialized')
         # Non default velocity.
-        vehicle = Vehicle(position=(42, 2), velocity=10)
-        self.assertEqual(vehicle.velocity, 10, 'velocity differs')
-        x, lane = vehicle.position
-        self.assertEqual(x, 42, 'position x differs')
-        self.assertEqual(lane, 2, 'position lane differs')
-        x, lane = vehicle.last_position
-        self.assertEqual(x, 42, 'last position x differs')
-        self.assertEqual(lane, 2, 'last position lane differs')
+        velocity = 10
+        vehicle = Vehicle(position=position, velocity=velocity)
+        self.assertEqual(vehicle.velocity, velocity, 'velocity differs')
+        self.assertEqual(vehicle.position, position, 'positions differs')
+        self.assertEqual(vehicle.last_position, position, 'last position not initialized')
 
     def test_interface(self):
         vehicle = Vehicle(position=(0, 0))
@@ -30,16 +41,6 @@ class TestVehicle(unittest.TestCase):
             vehicle.beforeMove()
         with self.assertRaises(NotImplementedError, msg='expected move to be virtual'):
             vehicle.move()
-
-
-def testImplementsVehicle(self: unittest.TestCase, vehicle: Vehicle):
-    position = vehicle.position
-    try:
-        vehicle.beforeMove()
-        vehicle.move()
-    except NotImplementedError:
-        self.fail('Vehicle interface not implemented')
-    self.assertEqual(vehicle.last_position, position, 'Last position differs')
 
 
 if __name__ == '__main__':
