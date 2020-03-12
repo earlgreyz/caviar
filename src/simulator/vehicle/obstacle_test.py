@@ -1,7 +1,7 @@
 import unittest
 
 from simulator.vehicle.obstacle import Obstacle
-from simulator.vehicle.test_vehicle import implementsVehicle
+from simulator.vehicle.vehicle_test import implementsVehicle
 
 
 @implementsVehicle
