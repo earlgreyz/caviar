@@ -1,4 +1,5 @@
 # Connected Autonomic Vehicles Simulator
+![caviar](https://github.com/earlgreyz/caviar/workflows/caviar/badge.svg?branch=master)
 
 ## Setting up the environment
 
