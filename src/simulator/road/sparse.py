@@ -2,7 +2,7 @@ import typing
 
 from sortedcontainers import SortedDict
 
-from simulator.position import Position
+from simulator.position import Position, inBounds
 from simulator.road.road import Road, CollisionError
 from simulator.road.speedcontroller import SpeedController
 from simulator.vehicle.vehicle import Vehicle
@@ -26,12 +26,16 @@ class SparseRoad(Road):
 
     def addVehicle(self, vehicle: Vehicle) -> None:
         x, lane = vehicle.position
+        if not inBounds(x, 0, self.length) or not inBounds(lane, 0, self.lanes_count):
+            raise IndexError(f'position {vehicle.position} not on the road')
         if x in self.lanes[lane]:
             raise CollisionError()
         self.lanes[lane][x] = vehicle
 
     def getVehicle(self, position: Position) -> typing.Optional[Vehicle]:
         x, lane = position
+        if not inBounds(x, 0, self.length) or not inBounds(lane, 0, self.lanes_count):
+            raise IndexError(f'position {position} not on the road')
         if x in self.lanes[lane]:
             return self.lanes[lane][x]
         return None
