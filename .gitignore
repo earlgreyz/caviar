@@ -15,3 +15,6 @@ venv/
 
 # macOS
 **/.DS_Store
+
+# Coverage reports
+.coverage
