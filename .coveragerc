@@ -1,6 +1,7 @@
 [run]
 branch = True
 source = src
+omit = *_test.py
 [report]
 exclude_lines =
     if self.debug:
