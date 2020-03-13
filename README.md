@@ -1,5 +1,6 @@
 # Connected Autonomic Vehicles Simulator
-![caviar](https://github.com/earlgreyz/caviar/workflows/caviar/badge.svg?branch=master)
+![unittest](https://github.com/earlgreyz/caviar/workflows/unittest/badge.svg)
+[![codecov](https://codecov.io/gh/earlgreyz/caviar/branch/master/graph/badge.svg?token=8CCDT357DL)](https://codecov.io/gh/earlgreyz/caviar)
 
 ## Setting up the environment
 
