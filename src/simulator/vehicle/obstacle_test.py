@@ -5,7 +5,7 @@ from simulator.vehicle.vehicle_test import implementsVehicle
 
 
 @implementsVehicle
-class TestObstacle(unittest.TestCase):
+class ObstacleTestCase(unittest.TestCase):
     def getVehicle(self) -> Obstacle:
         return Obstacle(position=(0, 0))
 

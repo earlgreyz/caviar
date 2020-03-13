@@ -3,7 +3,7 @@ import unittest
 from util.rand import shuffled
 
 
-class TestRandom(unittest.TestCase):
+class RandTestCase(unittest.TestCase):
     def test_shuffled(self):
         self.assertListEqual(shuffled([0]), [0])
         sample = list(range(10))

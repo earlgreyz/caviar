@@ -3,7 +3,7 @@ import unittest
 from simulator.position import inBounds
 
 
-class TestPosition(unittest.TestCase):
+class PositionTestCase(unittest.TestCase):
     def test_inBounds(self):
         self.assertTrue(inBounds(2, 1, 5))
         self.assertTrue(inBounds(42, 0, 100))

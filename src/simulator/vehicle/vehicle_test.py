@@ -20,7 +20,7 @@ def implementsVehicle(cls):
     return cls
 
 
-class TestVehicle(unittest.TestCase):
+class VehicleTestCase(unittest.TestCase):
     def test_init(self):
         position = (42, 2)
         # Default velocity.
