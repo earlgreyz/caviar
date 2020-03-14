@@ -1,3 +1,4 @@
+import typing
 import unittest
 from unittest.mock import Mock
 
@@ -67,8 +68,39 @@ def implementsRoad(cls):
         with self.assertRaises(IndexError):
             road.getVehicle(position)
 
+    def test_allVehicles(self: cls):
+        # Add and retrieve all the vehicles from a single lane.
+        road: Road = self.getRoad(length=100, lanes=1)
+        vehicles: typing.List[Vehicle] = []
+        for i in range(100):
+            vehicle: Vehicle = Mock()
+            vehicle.position = (i, 0)
+            vehicles.append(vehicle)
+            road.addVehicle(vehicle)
+        result = list(road.getAllVehicles())
+        self.assertEqual(len(result), len(vehicles), 'got invalid number of vehicles')
+        self.assertListEqual(result, list(reversed(vehicles)), 'vehicle lists differ')
+        # Add and retrieve all the vehicles from multiple lanes.
+        road: Road = self.getRoad(length=100, lanes=2)
+        vehicles: typing.List[Vehicle] = []
+        for lane in range(2):
+            for x in range(100):
+                vehicle: Vehicle = Mock()
+                vehicle.position = (x, 1 - lane)
+                vehicles.append(vehicle)
+                road.addVehicle(vehicle)
+        result = list(road.getAllVehicles())
+        self.assertEqual(len(result), len(vehicles), 'got invalid number of vehicles')
+        self.assertListEqual(result, list(reversed(vehicles)), 'vehicle lists differ')
+        # Get vehicles from an empty road.
+        road: Road = self.getRoad(length=100, lanes=2)
+        result = list(road.getAllVehicles())
+        self.assertEqual(len(result), 0, 'got invalid number of vehicles')
+        self.assertListEqual(result, [], 'vehicle lists differ')
+
     cls.test_addVehicle = test_addVehicle
     cls.test_getVehicle = test_getVehicle
+    cls.test_allVehicles = test_allVehicles
     return cls
 
 
