@@ -43,7 +43,7 @@ class DenseRoad(Road):
 
     def addPendingVehicle(self, vehicle: Vehicle) -> None:
         x, lane = vehicle.position
-        if x in self.lanes[lane]:
+        if self.pending_lanes[lane][x] is not None:
             raise CollisionError()
         self.pending_lanes[lane][x] = vehicle
 

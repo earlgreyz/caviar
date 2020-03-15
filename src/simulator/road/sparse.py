@@ -47,7 +47,9 @@ class SparseRoad(Road):
 
     def addPendingVehicle(self, vehicle: Vehicle) -> None:
         x, lane = vehicle.position
-        if x in self.lanes[lane]:
+        if not self.isProperPosition(vehicle.position):
+            raise IndexError(f'position {vehicle.position} not on the road')
+        if x in self.pending_lanes[lane]:
             raise CollisionError()
         self.pending_lanes[lane][x] = vehicle
 
