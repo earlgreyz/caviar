@@ -234,7 +234,31 @@ def implementsRoad(cls):
 
 
 class RoadTestCase(unittest.TestCase):
-    pass
+    def test_interface(self):
+        road = Road(100, 1)
+        with self.assertRaises(NotImplementedError):
+            road.addVehicle(vehicle=Mock())
+        with self.assertRaises(NotImplementedError):
+            _ = road.getVehicle(position=(0, 0))
+        with self.assertRaises(NotImplementedError):
+            _ = road.getAllVehicles()
+        with self.assertRaises(NotImplementedError):
+            road.addPendingVehicle(vehicle=Mock())
+        with self.assertRaises(NotImplementedError):
+            _ = road.getNextVehicle(position=(0, 0))
+        with self.assertRaises(NotImplementedError):
+            _ = road.getPreviousVehicle(position=(0, 0))
+        with self.assertRaises(NotImplementedError):
+            _ = road._commitLanes()
+
+    def test_isProperPosition(self):
+        road = Road(100, 1)
+        self.assertTrue(road.isProperPosition(position=(0, 0)))
+        self.assertTrue(road.isProperPosition(position=(99, 0)))
+        self.assertFalse(road.isProperPosition(position=(-1, 0)))
+        self.assertFalse(road.isProperPosition(position=(100, 0)))
+        self.assertFalse(road.isProperPosition(position=(0, 1)))
+        self.assertFalse(road.isProperPosition(position=(0, -1)))
 
 
 if __name__ == '__main__':
