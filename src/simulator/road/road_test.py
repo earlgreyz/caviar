@@ -128,10 +128,59 @@ def implementsRoad(cls):
         with self.assertRaises(CollisionError):
             road.addPendingVehicle(another)
 
+    def test_getNextVehicle(self: cls):
+        # Single lane.
+        road: Road = self.getRoad(length=100, lanes=1)
+        vehicle: Vehicle = Mock()
+        position = (10, 0)
+        vehicle.position = position
+        road.addVehicle(vehicle)
+        # All positions < 10 should return the vehicle.
+        for x in range(10):
+            rx, result = road.getNextVehicle(position=(x, 0))
+            self.assertEqual(rx, 10, 'got invalid next position')
+            self.assertEqual(result, vehicle, 'got invalid next vehicle')
+        # All positions >= 10 should return None.
+        for x in range(10, 100):
+            rx, result = road.getNextVehicle(position=(x, 0))
+            self.assertEqual(rx, 100, 'got invalid next position')
+            self.assertIsNone(result, 'got invalid next vehicle')
+        # Multiple lanes.
+        road: Road = self.getRoad(length=100, lanes=2)
+        vehicle: Vehicle = Mock()
+        position = (10, 0)
+        vehicle.position = position
+        road.addVehicle(vehicle)
+        # All positions < 10 should return the vehicle.
+        for x in range(10):
+            rx, result = road.getNextVehicle(position=(x, 0))
+            self.assertEqual(rx, 10, 'got invalid next position')
+            self.assertEqual(result, vehicle, 'got invalid next vehicle')
+        # All positions >= 10 should return None.
+        for x in range(10, 100):
+            rx, result = road.getNextVehicle(position=(x, 0))
+            self.assertEqual(rx, 100, 'got invalid next position')
+            self.assertIsNone(result, 'got invalid next vehicle')
+        for x in range(100):
+            rx, result = road.getNextVehicle(position=(x, 1))
+            self.assertEqual(rx, 100, 'got invalid next position')
+            self.assertIsNone(result, 'got invalid next vehicle')
+        # Check errors.
+        road: Road = self.getRoad(length=100, lanes=1)
+        with self.assertRaises(IndexError):
+            road.getNextVehicle(position=(-1, 0))
+        with self.assertRaises(IndexError):
+            road.getNextVehicle(position=(100, 0))
+        with self.assertRaises(IndexError):
+            road.getNextVehicle(position=(0, 1))
+        with self.assertRaises(IndexError):
+            road.getNextVehicle(position=(0, -1))
+
     cls.test_addVehicle = test_addVehicle
     cls.test_getVehicle = test_getVehicle
     cls.test_allVehicles = test_allVehicles
     cls.test_addPendingVehicle = test_addPendingVehicle
+    cls.test_getNextVehicle = test_getNextVehicle
     return cls
 
 

@@ -49,6 +49,8 @@ class DenseRoad(Road):
 
     def getNextVehicle(self, position: Position) -> typing.Tuple[int, typing.Optional[Vehicle]]:
         x, lane = position
+        if not self.isProperPosition(position):
+            raise IndexError(f'position {position} not on the road')
         for i in range(x + 1, self.length):
             if self.lanes[lane][i] is not None:
                 return i, self.lanes[lane][i]
@@ -56,6 +58,8 @@ class DenseRoad(Road):
 
     def getPreviousVehicle(self, position: Position) -> typing.Tuple[int, typing.Optional[Vehicle]]:
         x, lane = position
+        if not self.isProperPosition(position):
+            raise IndexError(f'position {position} not on the road')
         for i in range(x - 1, -1, -1):
             if self.lanes[lane][i] is not None:
                 return i, self.lanes[lane][i]

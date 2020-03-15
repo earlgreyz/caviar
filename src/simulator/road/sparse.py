@@ -55,6 +55,8 @@ class SparseRoad(Road):
 
     def getNextVehicle(self, position: Position) -> typing.Tuple[int, typing.Optional[Vehicle]]:
         x, lane = position
+        if not self.isProperPosition(position):
+            raise IndexError(f'position {position} not on the road')
         next = self.lanes[lane].bisect_right(x)
         if next == len(self.lanes[lane]):
             return self.length, None
@@ -63,6 +65,8 @@ class SparseRoad(Road):
 
     def getPreviousVehicle(self, position: Position) -> typing.Tuple[int, typing.Optional[Vehicle]]:
         x, lane = position
+        if not self.isProperPosition(position):
+            raise IndexError(f'position {position} not on the road')
         next = self.lanes[lane].bisect_left(x - 1)
         if next == len(self.lanes[lane]):
             return -1, None
