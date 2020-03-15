@@ -138,13 +138,13 @@ def implementsRoad(cls):
         # All positions < 10 should return the vehicle.
         for x in range(10):
             rx, result = road.getNextVehicle(position=(x, 0))
-            self.assertEqual(rx, 10, 'got invalid next position')
-            self.assertEqual(result, vehicle, 'got invalid next vehicle')
+            self.assertEqual(rx, 10, f'got invalid next position x={x}')
+            self.assertEqual(result, vehicle, f'got invalid next vehicle x={x}')
         # All positions >= 10 should return None.
         for x in range(10, 100):
             rx, result = road.getNextVehicle(position=(x, 0))
-            self.assertEqual(rx, 100, 'got invalid next position')
-            self.assertIsNone(result, 'got invalid next vehicle')
+            self.assertEqual(rx, 100, f'got invalid next position x={x}')
+            self.assertIsNone(result, f'got invalid next vehicle x={x}')
         # Multiple lanes.
         road: Road = self.getRoad(length=100, lanes=2)
         vehicle: Vehicle = Mock()
@@ -154,17 +154,17 @@ def implementsRoad(cls):
         # All positions < 10 should return the vehicle.
         for x in range(10):
             rx, result = road.getNextVehicle(position=(x, 0))
-            self.assertEqual(rx, 10, 'got invalid next position')
-            self.assertEqual(result, vehicle, 'got invalid next vehicle')
+            self.assertEqual(rx, 10, f'got invalid next position x={x}')
+            self.assertEqual(result, vehicle, f'got invalid next vehicle x={x}')
         # All positions >= 10 should return None.
         for x in range(10, 100):
             rx, result = road.getNextVehicle(position=(x, 0))
-            self.assertEqual(rx, 100, 'got invalid next position')
-            self.assertIsNone(result, 'got invalid next vehicle')
+            self.assertEqual(rx, 100, f'got invalid next position x={x}')
+            self.assertIsNone(result, f'got invalid next vehicle x={x}')
         for x in range(100):
             rx, result = road.getNextVehicle(position=(x, 1))
-            self.assertEqual(rx, 100, 'got invalid next position')
-            self.assertIsNone(result, 'got invalid next vehicle')
+            self.assertEqual(rx, 100, f'got invalid next position for x={x}')
+            self.assertIsNone(result, f'got invalid next vehicle for x={x}')
         # Check errors.
         road: Road = self.getRoad(length=100, lanes=1)
         with self.assertRaises(IndexError):
@@ -176,11 +176,60 @@ def implementsRoad(cls):
         with self.assertRaises(IndexError):
             road.getNextVehicle(position=(0, -1))
 
+    def test_getPreviousVehicle(self: cls):
+        # Single lane.
+        road: Road = self.getRoad(length=100, lanes=1)
+        vehicle: Vehicle = Mock()
+        position = (90, 0)
+        vehicle.position = position
+        road.addVehicle(vehicle)
+        # All positions <= 90 should return None.
+        for x in range(91):
+            rx, result = road.getPreviousVehicle(position=(x, 0))
+            self.assertEqual(rx, -1, f'got invalid previous position x={x}')
+            self.assertIsNone(result, f'got invalid previous vehicle x={x}')
+        # All positions > 90 should return the vehicle.
+        for x in range(91, 100):
+            rx, result = road.getPreviousVehicle(position=(x, 0))
+            self.assertEqual(rx, 90, f'got invalid previous position x={x}')
+            self.assertEqual(result, vehicle, f'got invalid previous vehicle x={x}')
+        # Multiple lanes.
+        road: Road = self.getRoad(length=100, lanes=2)
+        vehicle: Vehicle = Mock()
+        position = (90, 0)
+        vehicle.position = position
+        road.addVehicle(vehicle)
+        # All positions <= 90 should return None.
+        for x in range(91):
+            rx, result = road.getPreviousVehicle(position=(x, 0))
+            self.assertEqual(rx, -1, f'got invalid previous position x={x}')
+            self.assertIsNone(result, f'got invalid previous vehicle x={x}')
+        # All positions > 90 should return the vehicle.
+        for x in range(91, 100):
+            rx, result = road.getPreviousVehicle(position=(x, 0))
+            self.assertEqual(rx, 90, f'got invalid previous position x={x}')
+            self.assertEqual(result, vehicle, f'got invalid previous vehicle x={x}')
+        for x in range(100):
+            rx, result = road.getPreviousVehicle(position=(x, 1))
+            self.assertEqual(rx, -1, f'got invalid previous position x={x}')
+            self.assertIsNone(result, f'got invalid previous vehicle x={x}')
+        # Check errors.
+        road: Road = self.getRoad(length=100, lanes=1)
+        with self.assertRaises(IndexError):
+            road.getPreviousVehicle(position=(-1, 0))
+        with self.assertRaises(IndexError):
+            road.getPreviousVehicle(position=(100, 0))
+        with self.assertRaises(IndexError):
+            road.getPreviousVehicle(position=(0, 1))
+        with self.assertRaises(IndexError):
+            road.getPreviousVehicle(position=(0, -1))
+
     cls.test_addVehicle = test_addVehicle
     cls.test_getVehicle = test_getVehicle
     cls.test_allVehicles = test_allVehicles
     cls.test_addPendingVehicle = test_addPendingVehicle
     cls.test_getNextVehicle = test_getNextVehicle
+    cls.test_getPreviousVehicle = test_getPreviousVehicle
     return cls
 
 

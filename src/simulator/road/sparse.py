@@ -67,10 +67,10 @@ class SparseRoad(Road):
         x, lane = position
         if not self.isProperPosition(position):
             raise IndexError(f'position {position} not on the road')
-        next = self.lanes[lane].bisect_left(x - 1)
-        if next == len(self.lanes[lane]):
+        next = self.lanes[lane].bisect_left(x)
+        if next == 0:
             return -1, None
-        vx, vehicle = self.lanes[lane].peekitem(next)
+        vx, vehicle = self.lanes[lane].peekitem(next - 1)
         if vx < x:
             return vx, vehicle
         return -1, None
