@@ -237,6 +237,31 @@ def implementsRoad(cls):
             result = road.getVehicle(position=(x, 0))
             self.assertEqual(result, vehicles[x], f'got invalid vehicle x={x}')
 
+    def test_updateLanes(self: cls):
+        road: Road = self.getRoad(length=100, lanes=1)
+        vehicles: typing.List[Vehicle] = []
+        for x in range(100):
+            vehicle = Mock()
+            vehicle.position = (x, 0)
+            vehicles.append(vehicle)
+            road.addVehicle(vehicle)
+
+        # Check if updateLanes traverses all vehicles.
+        def f(vehicle):
+            return vehicle.position
+
+        road._updateLanes(f)
+        self.assertCountEqual(road.getAllVehicles(), vehicles, 'not all vehicles were traversed')
+
+        # Check if vehicles outside of the road are removed.
+        def g(vehicle):
+            x, lane = vehicle.position
+            vehicle.position = x + 5, lane
+            return vehicle.position
+
+        road._updateLanes(g)
+        self.assertCountEqual(road.getAllVehicles(), vehicles[:-5], 'vehicles not removed')
+
     cls.test_addVehicle = test_addVehicle
     cls.test_getVehicle = test_getVehicle
     cls.test_allVehicles = test_allVehicles
@@ -244,6 +269,7 @@ def implementsRoad(cls):
     cls.test_getNextVehicle = test_getNextVehicle
     cls.test_getPreviousVehicle = test_getPreviousVehicle
     cls.test_commitLanes = test_commitLanes
+    cls.test_updateLanes = test_updateLanes
     return cls
 
 
