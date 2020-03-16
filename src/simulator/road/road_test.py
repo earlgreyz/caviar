@@ -224,12 +224,26 @@ def implementsRoad(cls):
         with self.assertRaises(IndexError):
             road.getPreviousVehicle(position=(0, -1))
 
+    def test_commitLanes(self: cls):
+        road: Road = self.getRoad(length=100, lanes=1)
+        vehicles: typing.List[Vehicle] = []
+        for x in range(100):
+            vehicle = Mock()
+            vehicle.position = (x, 0)
+            vehicles.append(vehicle)
+            road.addPendingVehicle(vehicle)
+        road._commitLanes()
+        for x in range(100):
+            result = road.getVehicle(position=(x, 0))
+            self.assertEqual(result, vehicles[x], f'got invalid vehicle x={x}')
+
     cls.test_addVehicle = test_addVehicle
     cls.test_getVehicle = test_getVehicle
     cls.test_allVehicles = test_allVehicles
     cls.test_addPendingVehicle = test_addPendingVehicle
     cls.test_getNextVehicle = test_getNextVehicle
     cls.test_getPreviousVehicle = test_getPreviousVehicle
+    cls.test_commitLanes = test_commitLanes
     return cls
 
 

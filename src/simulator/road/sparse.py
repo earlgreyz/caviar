@@ -70,10 +70,8 @@ class SparseRoad(Road):
         next = self.lanes[lane].bisect_left(x)
         if next == 0:
             return -1, None
-        vx, vehicle = self.lanes[lane].peekitem(next - 1)
-        if vx < x:
-            return vx, vehicle
-        return -1, None
+        else:
+            return self.lanes[lane].peekitem(next - 1)
 
     def _commitLanes(self) -> None:
         self.lanes = self.pending_lanes
