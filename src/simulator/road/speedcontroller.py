@@ -23,7 +23,7 @@ class SpeedController:
         :param limit: limit value.
         :return: None.
         '''
-        self.limits[lane].addi(begin=begin, end=end, data=limit)
+        self.limits[lane].addi(begin=begin, end=end + 1, data=limit)
 
     def getMaxSpeed(self, position: Position) -> int:
         '''
