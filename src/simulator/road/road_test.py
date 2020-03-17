@@ -300,6 +300,35 @@ class RoadTestCase(unittest.TestCase):
         self.assertFalse(road.isProperPosition(position=(0, 1)))
         self.assertFalse(road.isProperPosition(position=(0, -1)))
 
+    def test_getAverageVelocityFiltered(self):
+        road = Road(100, 1)
+        vehicles: typing.List[Vehicle] = []
+        for velocity in range(10):
+            vehicle = Mock()
+            vehicle.velocity = velocity
+            vehicles.append(vehicle)
+        road.getAllVehicles = lambda: vehicles
+        # No vehicles matching the predicate.
+        self.assertEqual(road.getAverageVelocityFiltered(lambda _: False), 0, 'invalid velocity')
+        # All vehicles matching the predicate.
+        self.assertEqual(road.getAverageVelocityFiltered(lambda _: True), 4.5, 'invalid velocity')
+
+        # Some vehicles matching the predicate.
+        def isEven(vehicle):
+            return vehicle.velocity % 2 == 0
+
+        self.assertEqual(road.getAverageVelocityFiltered(isEven), 4.0, 'invalid velocity')
+
+    def test_getAverageVelocity(self):
+        road = Road(100, 1)
+        vehicles: typing.List[Vehicle] = []
+        for velocity in range(10):
+            vehicle = Mock()
+            vehicle.velocity = velocity
+            vehicles.append(vehicle)
+        road.getAllVehicles = lambda: vehicles
+        self.assertEqual(road.getAverageVelocity(), 4.5, 'invalid velocity')
+
 
 if __name__ == '__main__':
     unittest.main()
