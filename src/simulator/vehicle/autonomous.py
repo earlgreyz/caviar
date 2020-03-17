@@ -35,7 +35,8 @@ class AutonomousCar(Vehicle):
 
     def _canChangeLane(self, destination: Position) -> bool:
         return self.road.isProperPosition(position=destination) and \
-               self.road.getVehicle(position=destination) is None
+               self.road.getVehicle(position=destination) is None and \
+               self.road.getPendingVehicle(position=destination) is None
 
     def _shouldChangeLane(self, destination: Position) -> bool:
         x, _ = self.position

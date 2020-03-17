@@ -47,6 +47,10 @@ class DenseRoad(Road):
             raise CollisionError()
         self.pending_lanes[lane][x] = vehicle
 
+    def getPendingVehicle(self, position: Position) -> typing.Optional[Vehicle]:
+        x, lane = position
+        return self.pending_lanes[lane][x]
+
     def getNextVehicle(self, position: Position) -> typing.Tuple[int, typing.Optional[Vehicle]]:
         x, lane = position
         if not self.isProperPosition(position):

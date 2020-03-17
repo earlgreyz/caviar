@@ -53,6 +53,14 @@ class SparseRoad(Road):
             raise CollisionError()
         self.pending_lanes[lane][x] = vehicle
 
+    def getPendingVehicle(self, position: Position) -> typing.Optional[Vehicle]:
+        x, lane = position
+        if not self.isProperPosition(position):
+            raise IndexError(f'position {position} not on the road')
+        if x in self.pending_lanes[lane]:
+            return self.pending_lanes[lane][x]
+        return None
+
     def getNextVehicle(self, position: Position) -> typing.Tuple[int, typing.Optional[Vehicle]]:
         x, lane = position
         if not self.isProperPosition(position):

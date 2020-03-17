@@ -51,6 +51,14 @@ class Road:
         '''
         raise NotImplementedError
 
+    def getPendingVehicle(self, position: Position) -> typing.Optional[Vehicle]:
+        '''
+        Gets a vehicle from the road which will be added on the next commit.
+        :param position: position on the road.
+        :return: a vehicle currently at the given pending position or None.
+        '''
+        raise NotImplementedError()
+
     def getNextVehicle(self, position: Position) -> typing.Tuple[int, typing.Optional[Vehicle]]:
         '''
         Gets the vehicle in front of a given position.

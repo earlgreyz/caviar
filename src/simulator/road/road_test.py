@@ -128,6 +128,31 @@ def implementsRoad(cls):
         with self.assertRaises(CollisionError):
             road.addPendingVehicle(another)
 
+    def test_getPendingVehicle(self: cls):
+        # Add and retrieve the vehicle.
+        road: Road = self.getRoad(length=100, lanes=1)
+        vehicle: Vehicle = Mock()
+        position = (0, 0)
+        vehicle.position = position
+        road.addPendingVehicle(vehicle)
+        result = road.getPendingVehicle(position)
+        self.assertEqual(result, vehicle, 'got invalid vehicle')
+        # Get vehicle from an empty cell.
+        road: Road = self.getRoad(length=100, lanes=1)
+        position = (0, 0)
+        result = road.getPendingVehicle(position)
+        self.assertIsNone(result, 'got unexpected vehicle')
+        # Try to get vehicle from outside the road length.
+        road: Road = self.getRoad(length=100, lanes=1)
+        position = (100, 0)
+        with self.assertRaises(IndexError):
+            road.getPendingVehicle(position)
+        # Try to get the vehicle from outside the road lanes.
+        road: Road = self.getRoad(length=100, lanes=1)
+        position = (0, 1)
+        with self.assertRaises(IndexError):
+            road.getPendingVehicle(position)
+
     def test_getNextVehicle(self: cls):
         # Single lane.
         road: Road = self.getRoad(length=100, lanes=1)
@@ -284,6 +309,8 @@ class RoadTestCase(unittest.TestCase):
             _ = road.getAllVehicles()
         with self.assertRaises(NotImplementedError):
             road.addPendingVehicle(vehicle=Mock())
+        with self.assertRaises(NotImplementedError):
+            _ = road.getPendingVehicle(position=(0, 0))
         with self.assertRaises(NotImplementedError):
             _ = road.getNextVehicle(position=(0, 0))
         with self.assertRaises(NotImplementedError):
