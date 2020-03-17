@@ -329,6 +329,14 @@ class RoadTestCase(unittest.TestCase):
         road.getAllVehicles = lambda: vehicles
         self.assertEqual(road.getAverageVelocity(), 4.5, 'invalid velocity')
 
+    def test_step(self):
+        road = Road(100, 1)
+        vehicle = Mock()
+        road._updateLanes = lambda f: f(vehicle)
+        road.step()
+        vehicle.beforeMove.assert_called_once()
+        vehicle.move.assert_called_once()
+
 
 if __name__ == '__main__':
     unittest.main()
