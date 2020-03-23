@@ -291,6 +291,7 @@ def implementsRoad(cls):
     cls.test_getVehicle = test_getVehicle
     cls.test_allVehicles = test_allVehicles
     cls.test_addPendingVehicle = test_addPendingVehicle
+    cls.test_getPendingVehicle = test_getPendingVehicle
     cls.test_getNextVehicle = test_getNextVehicle
     cls.test_getPreviousVehicle = test_getPreviousVehicle
     cls.test_commitLanes = test_commitLanes
