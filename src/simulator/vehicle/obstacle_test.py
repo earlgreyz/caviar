@@ -1,13 +1,14 @@
 import unittest
 
+from simulator.position import Position
 from simulator.vehicle.obstacle import Obstacle
 from simulator.vehicle.vehicle_test import implementsVehicle
 
 
 @implementsVehicle
 class ObstacleTestCase(unittest.TestCase):
-    def getVehicle(self) -> Obstacle:
-        return Obstacle(position=(0, 0))
+    def getVehicle(self, position: Position) -> Obstacle:
+        return Obstacle(position=position)
 
     def test_init(self):
         position = (42, 2)

@@ -1,14 +1,15 @@
 import unittest
 
+from simulator.position import Position
 from simulator.vehicle.vehicle import Vehicle
 
 
 def implementsVehicle(cls):
     assert hasattr(cls, 'getVehicle') and callable(getattr(cls, 'getVehicle'))
 
-    def test(self: cls):
-        vehicle: Vehicle = self.getVehicle()
-        position = vehicle.position
+    def test_implementsVehicle(self: cls):
+        position: Position = (42, 0)
+        vehicle: Vehicle = self.getVehicle(position=position)
         try:
             vehicle.beforeMove()
             vehicle.move()
@@ -16,7 +17,7 @@ def implementsVehicle(cls):
             self.fail('Vehicle interface not implemented')
         self.assertEqual(vehicle.last_position, position, 'Last position differs')
 
-    cls.test_implementsVehicle = test
+    cls.test_implementsVehicle = test_implementsVehicle
     return cls
 
 
