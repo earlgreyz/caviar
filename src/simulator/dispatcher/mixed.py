@@ -19,7 +19,7 @@ class MixedDispatcher(Dispatcher):
 
     def _newVehicle(self, position: Position) -> Vehicle:
         speed = self.road.controller.getMaxSpeed(position)
-        if random.random() <= self.penetration:
+        if random.random() < self.penetration:
             return AutonomousCar(position, velocity=speed, road=self.road)
         else:
             return Car(position, velocity=speed, road=self.road, params=self.params)
