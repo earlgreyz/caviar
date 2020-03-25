@@ -1,8 +1,8 @@
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from simulator.position import Position
-from simulator.vehicle.car import Car
+from simulator.vehicle.car import Car, isConventional
 from simulator.vehicle.vehicle import Vehicle
 from simulator.vehicle.vehicle_test import implementsVehicle
 
@@ -53,6 +53,78 @@ class CarTestCase(unittest.TestCase):
         road.getVehicle.return_value = None
         road.getPendingVehicle.return_value = None
         self.assertTrue(car._canChangeLane(destination=(0, 1)))
+
+    def test_shouldChangeLane(self):
+        road = Mock()
+        position = (10, 0)
+        destination = (10, 1)
+        limit = 5
+        car = Car(position=position, velocity=limit + 1, road=road)
+
+        def mock_getMaxSpeed(speed: int):
+            return lambda position: limit if position == car.position else speed
+
+        # Speed on the destination lane is lower or equal.
+        for i in range(limit + 1):
+            car._getMaxSpeed = Mock(side_effect=mock_getMaxSpeed(i))
+            self.assertFalse(car._shouldChangeLane(destination), f'destination speed={i}')
+        # Velocity is higher than the distance to the next vehicle on the destination lane.
+        car._getMaxSpeed = Mock(side_effect=mock_getMaxSpeed(limit + 1))
+        road.getNextVehicle.return_value = (10 + limit, Mock())
+        self.assertFalse(car._shouldChangeLane(destination))
+        # A vehicle is approaching from behind.
+        road.getNextVehicle.return_value = (100, None)
+        road.controller.getMaxSpeed.return_value = 5
+        road.getPreviousVehicle.return_value = (5, Mock())
+        self.assertFalse(car._shouldChangeLane(destination))
+        # Lane change is possible.
+        road.getPreviousVehicle.return_value = (0, Mock())
+        self.assertTrue(car._shouldChangeLane(destination))
+        road.getPreviousVehicle.return_value = (-1, None)
+        self.assertTrue(car._shouldChangeLane(destination))
+
+    @patch('random.random')
+    def test_changeLane(self, patched_random):
+        road = Mock()
+        car = Car(position=(0, 0), velocity=5, road=road)
+        # Unable to change the lane.
+        ccls = [False, False, True]
+        scls = [False, True, False]
+        for ccl, scl in zip(ccls, scls):
+            car._canChangeLane = Mock(return_value=ccl)
+            car._shouldChangeLane = Mock(return_value=scl)
+            self.assertFalse(car._changeLane(destination=(0, 1)))
+        # Can change the lane.
+        car._canChangeLane = Mock(return_value=True)
+        car._shouldChangeLane = Mock(return_value=True)
+        # Change probability 0.5
+        car.params.lane_change_probability = 0.5
+        patched_random.return_value = 0.
+        self.assertTrue(car._changeLane(destination=(0, 1)))
+        patched_random.return_value = 0.49
+        self.assertTrue(car._changeLane(destination=(0, 1)))
+        patched_random.return_value = 0.5
+        self.assertFalse(car._changeLane(destination=(0, 1)))
+        patched_random.return_value = 0.99
+        self.assertFalse(car._changeLane(destination=(0, 1)))
+        # Change probability 0
+        car.params.lane_change_probability = 0.
+        patched_random.return_value = 0.
+        self.assertFalse(car._changeLane(destination=(0, 1)))
+        patched_random.return_value = 0.99
+        self.assertFalse(car._changeLane(destination=(0, 1)))
+        # Change probability 1
+        car.params.lane_change_probability = 1.
+        patched_random.return_value = 0.
+        self.assertTrue(car._changeLane(destination=(0, 1)))
+        patched_random.return_value = 0.99
+        self.assertTrue(car._changeLane(destination=(0, 1)))
+
+    def test_isConventional(self):
+        car = self.getVehicle(position=(0, 0))
+        self.assertTrue(isConventional(car))
+        vehicle = Vehicle(position=(0, 0), velocity=0)
+        self.assertFalse(isConventional(vehicle))
 
 
 if __name__ == '__main__':

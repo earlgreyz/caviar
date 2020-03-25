@@ -73,7 +73,7 @@ class Car(Vehicle):
     def _changeLane(self, destination: Position) -> bool:
         if not self._canChangeLane(destination) or not self._shouldChangeLane(destination):
             return False
-        return random.random() <= self.params.lane_change_probability
+        return random.random() < self.params.lane_change_probability
 
     def _getMaxSpeed(self, position: Position) -> int:
         x, _ = position
