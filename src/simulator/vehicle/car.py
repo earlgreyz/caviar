@@ -39,7 +39,7 @@ class Car(Vehicle):
 
     def move(self) -> Position:
         x, lane = self.position
-        if self.velocity > 0 and random.random() <= self.params.slow_down_probability:
+        if self.velocity > 0 and random.random() < self.params.slow_down_probability:
             self.velocity -= 1
         else:
             self.velocity += 1

@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 from simulator.position import Position
-from simulator.vehicle.car import Car, isConventional
+from simulator.vehicle.car import Car, isConventional, CarParams
 from simulator.vehicle.vehicle import Vehicle
 from simulator.vehicle.vehicle_test import implementsVehicle
 
@@ -119,6 +119,50 @@ class CarTestCase(unittest.TestCase):
         self.assertTrue(car._changeLane(destination=(0, 1)))
         patched_random.return_value = 0.99
         self.assertTrue(car._changeLane(destination=(0, 1)))
+
+    @patch('simulator.vehicle.car.shuffled')
+    def test_beforeMove(self, mocked_shuffled):
+        mocked_shuffled.side_effect = lambda xs: xs
+        road = Mock()
+        # Lanes not changed.
+        car = Car(position=(42, 1), velocity=5, road=road)
+        car._changeLane = Mock(return_value=False)
+        position = car.beforeMove()
+        self.assertEqual(position, (42, 1))
+        self.assertEqual(car.position, (42, 1))
+        # Change to the first available lane.
+        car = Car(position=(42, 1), velocity=5, road=road)
+        car._changeLane = Mock(return_value=True)
+        position = car.beforeMove()
+        self.assertEqual(position, (42, 0))
+        self.assertEqual(car.position, (42, 0))
+        # Change to the second available lane.
+        car = Car(position=(42, 1), velocity=5, road=road)
+        car._changeLane = Mock(side_effect=[False, True])
+        position = car.beforeMove()
+        self.assertEqual(position, (42, 2))
+        self.assertEqual(car.position, (42, 2))
+
+    @patch('random.random')
+    def test_move(self, patched_random):
+        # No slowdown.
+        car = Car(position=(0, 0), velocity=5, road=Mock(), params=CarParams(slow=0))
+        patched_random.return_value = 1
+        car._getMaxSpeed = Mock(return_value=5)
+        position = car.move()
+        self.assertEqual(position, (5, 0))
+        # Speed up.
+        car = Car(position=(0, 0), velocity=3, road=Mock(), params=CarParams(slow=0))
+        patched_random.return_value = 1
+        car._getMaxSpeed = Mock(return_value=5)
+        position = car.move()
+        self.assertEqual(position, (4, 0))
+        # Slowdown.
+        car = Car(position=(0, 0), velocity=3, road=Mock(), params=CarParams(slow=1))
+        patched_random.return_value = 0
+        car._getMaxSpeed = Mock(return_value=5)
+        position = car.move()
+        self.assertEqual(position, (2, 0))
 
     def test_isConventional(self):
         car = self.getVehicle(position=(0, 0))
