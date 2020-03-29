@@ -286,6 +286,7 @@ def implementsRoad(cls):
 
         road._updateLanes(g)
         self.assertCountEqual(road.getAllVehicles(), vehicles[:-5], 'vehicles not removed')
+        self.assertCountEqual(road.removed, vehicles[-5:], 'invalid vehicles removed')
 
     cls.test_addVehicle = test_addVehicle
     cls.test_getVehicle = test_getVehicle

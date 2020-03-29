@@ -12,11 +12,14 @@ class Road:
     length: int
     lanes_count: int
 
+    removed: typing.List[Vehicle]
+
     def __init__(self, length: int, lanes_count: int,
                  controller: typing.Optional[SpeedController] = None):
         self.length = length
         self.lanes_count = lanes_count
         self.controller = controller if controller is not None else SpeedController()
+        self.removed = []
 
     def addVehicle(self, vehicle: Vehicle) -> None:
         '''
@@ -102,6 +105,8 @@ class Road:
             x, _ = f(vehicle)
             if x < self.length:
                 self.addPendingVehicle(vehicle=vehicle)
+            else:
+                self.removed.append(vehicle)
         self._commitLanes()
 
     def step(self) -> None:
@@ -109,6 +114,7 @@ class Road:
         Performs a single simulation step moving all the vehicles.
         :return: None.
         '''
+        self.removed = []
         self._updateLanes(lambda vehicle: vehicle.beforeMove())
         self._updateLanes(lambda vehicle: vehicle.move())
 

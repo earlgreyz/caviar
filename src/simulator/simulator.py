@@ -28,4 +28,5 @@ class Simulator:
             average_velocity_autonomous=self.road.getAverageVelocityFiltered(isAutonomous),
             average_velocity_conventional=self.road.getAverageVelocityFiltered(isConventional),
             steps=self.steps,
+            throughput=len(self.road.removed),
         )
