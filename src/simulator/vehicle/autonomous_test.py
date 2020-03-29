@@ -1,3 +1,4 @@
+import typing
 import unittest
 from unittest.mock import Mock
 
@@ -110,6 +111,47 @@ class AutonomousCarTestCase(unittest.TestCase):
         self.assertTrue(car._shouldChangeLane(destination))
         road.getPreviousVehicle.return_value = (-1, None)
         self.assertTrue(car._shouldChangeLane(destination))
+
+    def test_beforeMove(self):
+        def mock_getMaxSpeed(previous: int, next: int, other: int) \
+                -> typing.Callable[[Position], int]:
+            def f(position: Position) -> int:
+                if position == (0, 0):
+                    return previous
+                if position == (0, 2):
+                    return next
+                return other
+
+            return f
+
+        # Previous lane is the fastest.
+        car = AutonomousCar(position=(0, 1), velocity=5, road=Mock())
+        car._canChangeLane = Mock(return_value=True)
+        car._shouldChangeLane = Mock(return_value=True)
+        car._getMaxSpeed = Mock(side_effect=mock_getMaxSpeed(5, 4, 3))
+        position = car.beforeMove()
+        self.assertEqual(position, (0, 0))
+        # Next lane is the fastest.
+        car = AutonomousCar(position=(0, 1), velocity=5, road=Mock())
+        car._canChangeLane = Mock(return_value=True)
+        car._shouldChangeLane = Mock(return_value=True)
+        car._getMaxSpeed = Mock(side_effect=mock_getMaxSpeed(4, 5, 3))
+        position = car.beforeMove()
+        self.assertEqual(position, (0, 2))
+        # Current lane is the fastest.
+        car = AutonomousCar(position=(0, 1), velocity=5, road=Mock())
+        car._canChangeLane = Mock(return_value=True)
+        car._shouldChangeLane = Mock(return_value=True)
+        car._getMaxSpeed = Mock(side_effect=mock_getMaxSpeed(4, 3, 5))
+        position = car.beforeMove()
+        self.assertEqual(position, (0, 1))
+        # Best lane is the same speed as current.
+        car = AutonomousCar(position=(0, 1), velocity=5, road=Mock())
+        car._canChangeLane = Mock(return_value=True)
+        car._shouldChangeLane = Mock(return_value=True)
+        car._getMaxSpeed = Mock(side_effect=mock_getMaxSpeed(5, 4, 5))
+        position = car.beforeMove()
+        self.assertEqual(position, (0, 1))
 
     def test_isAutonomous(self):
         car = self.getVehicle(position=(0, 0))
