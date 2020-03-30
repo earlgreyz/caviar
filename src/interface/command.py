@@ -10,7 +10,6 @@ from interface.cli.controller import Controller as CLIController
 
 from simulator.dispatcher.mixed import MixedDispatcher
 from simulator.road.dense import DenseRoad
-from simulator.road.sparse import SparseRoad
 from simulator.road.speedcontroller import SpeedController
 from simulator.simulator import Simulator
 from simulator.vehicle.car import CarParams
@@ -26,7 +25,6 @@ def configProvider(file_path: str, cmd: str) -> typing.Dict[str, typing.Any]:
 # Road options.
 @click.option('--length', default=100, help='Road length')
 @click.option('--lanes', default=6, help='Number of lanes')
-@click.option('--sparse', default=False, is_flag=True, help='Use sparse road implementation')
 # Speed controller options.
 @click.option('--max-speed', default=5, help='Road maximum speed')
 @click.option('--obstacles', multiple=True, default=[], type=ObstacleParamType())
@@ -44,7 +42,6 @@ def command(ctx: click.Context, **kwargs) -> None:
     # Extract options.
     length: int = kwargs['length']
     lanes: int = kwargs['lanes']
-    sparse: bool = kwargs['sparse']
     max_speed: int = kwargs['max_speed']
     dispatch: int = kwargs['dispatch']
     penetration: float = kwargs['penetration']
@@ -57,10 +54,7 @@ def command(ctx: click.Context, **kwargs) -> None:
         random.seed(seed)
     # Create a road.
     speed_controller = SpeedController(max_speed=max_speed)
-    if sparse:
-        road = SparseRoad(length=length, lanes_count=lanes, controller=speed_controller)
-    else:
-        road = DenseRoad(length=length, lanes_count=lanes, controller=speed_controller)
+    road = DenseRoad(length=length, lanes_count=lanes, controller=speed_controller)
     # Add obstacles.
     for obstacle in obstacles:
         addObstacle(road=road, obstacle=obstacle)
