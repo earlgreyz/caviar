@@ -12,31 +12,31 @@ def implementsRoad(cls):
     def test_addVehicle(self: cls):
         # Add a vehicle.
         road: Road = self.getRoad(length=100, lanes=1)
-        vehicle: Vehicle = Mock()
+        vehicle: Vehicle = Mock(length=1)
         position = (0, 0)
         vehicle.position = position
         road.addVehicle(vehicle)
         # Try to add the vehicle outside the road length.
         road: Road = self.getRoad(length=100, lanes=1)
-        vehicle: Vehicle = Mock()
+        vehicle: Vehicle = Mock(length=1)
         position = (100, 0)
         vehicle.position = position
         with self.assertRaises(IndexError):
             road.addVehicle(vehicle)
         # Try to add the vehicle outside the road lanes.
         road: Road = self.getRoad(length=100, lanes=1)
-        vehicle: Vehicle = Mock()
+        vehicle: Vehicle = Mock(length=1)
         position = (0, 1)
         vehicle.position = position
         with self.assertRaises(IndexError):
             road.addVehicle(vehicle)
         # Try to add the vehicle to a nonempty road cell.
         road: Road = self.getRoad(length=100, lanes=1)
-        vehicle: Vehicle = Mock()
+        vehicle: Vehicle = Mock(length=1)
         position = (0, 0)
         vehicle.position = position
         road.addVehicle(vehicle)
-        another: Vehicle = Mock()
+        another: Vehicle = Mock(length=1)
         another.position = position
         with self.assertRaises(CollisionError):
             road.addVehicle(another)
@@ -44,7 +44,7 @@ def implementsRoad(cls):
     def test_getVehicle(self: cls):
         # Add and retrieve the vehicle.
         road: Road = self.getRoad(length=100, lanes=1)
-        vehicle: Vehicle = Mock()
+        vehicle: Vehicle = Mock(length=1)
         position = (0, 0)
         vehicle.position = position
         road.addVehicle(vehicle)
@@ -66,12 +66,26 @@ def implementsRoad(cls):
         with self.assertRaises(IndexError):
             road.getVehicle(position)
 
+    def test_addVehicle_long(self: cls):
+        # Add and retrieve the vehicle.
+        road: Road = self.getRoad(length=100, lanes=1)
+        vehicle: Vehicle = Mock(length=2)
+        position = (1, 0)
+        vehicle.position = position
+        road.addVehicle(vehicle)
+        result = road.getVehicle(position)
+        self.assertEqual(result, vehicle)
+        result = road.getVehicle((0, 0))
+        self.assertEqual(result, vehicle)
+        result = road.getVehicle((2, 0))
+        self.assertIsNone(result)
+
     def test_allVehicles(self: cls):
         # Add and retrieve all the vehicles from a single lane.
         road: Road = self.getRoad(length=100, lanes=1)
         vehicles: typing.List[Vehicle] = []
         for i in range(100):
-            vehicle: Vehicle = Mock()
+            vehicle: Vehicle = Mock(length=1)
             vehicle.position = (i, 0)
             vehicles.append(vehicle)
             road.addVehicle(vehicle)
@@ -83,7 +97,7 @@ def implementsRoad(cls):
         vehicles: typing.List[Vehicle] = []
         for lane in range(2):
             for x in range(100):
-                vehicle: Vehicle = Mock()
+                vehicle: Vehicle = Mock(length=1)
                 vehicle.position = (x, 1 - lane)
                 vehicles.append(vehicle)
                 road.addVehicle(vehicle)
@@ -95,35 +109,46 @@ def implementsRoad(cls):
         result = list(road.getAllVehicles())
         self.assertEqual(len(result), 0, 'got invalid number of vehicles')
         self.assertListEqual(result, [], 'vehicle lists differ')
+        # Long vehicles should be returned at each occupied position.
+        road: Road = self.getRoad(length=100, lanes=1)
+        vehicles: typing.List[Vehicle] = []
+        for i in range(1, 100, 2):
+            vehicle: Vehicle = Mock(length=2)
+            vehicle.position = (i, 0)
+            vehicles.extend([vehicle, vehicle])
+            road.addVehicle(vehicle)
+        result = list(road.getAllVehicles())
+        self.assertEqual(len(result), len(vehicles), 'got invalid number of vehicles')
+        self.assertListEqual(result, list(reversed(vehicles)), 'vehicle lists differ')
 
     def test_addPendingVehicle(self: cls):
         # Add a vehicle.
         road: Road = self.getRoad(length=100, lanes=1)
-        vehicle: Vehicle = Mock()
+        vehicle: Vehicle = Mock(length=1)
         position = (0, 0)
         vehicle.position = position
         road.addPendingVehicle(vehicle)
         # Try to add the vehicle outside the road length.
         road: Road = self.getRoad(length=100, lanes=1)
-        vehicle: Vehicle = Mock()
+        vehicle: Vehicle = Mock(length=1)
         position = (100, 0)
         vehicle.position = position
         with self.assertRaises(IndexError):
             road.addPendingVehicle(vehicle)
         # Try to add the vehicle outside the road lanes.
         road: Road = self.getRoad(length=100, lanes=1)
-        vehicle: Vehicle = Mock()
+        vehicle: Vehicle = Mock(length=1)
         position = (0, 1)
         vehicle.position = position
         with self.assertRaises(IndexError):
             road.addPendingVehicle(vehicle)
         # Try to add the vehicle to a nonempty road cell.
         road: Road = self.getRoad(length=100, lanes=1)
-        vehicle: Vehicle = Mock()
+        vehicle: Vehicle = Mock(length=1)
         position = (0, 0)
         vehicle.position = position
         road.addPendingVehicle(vehicle)
-        another: Vehicle = Mock()
+        another: Vehicle = Mock(length=1)
         another.position = position
         with self.assertRaises(CollisionError):
             road.addPendingVehicle(another)
@@ -131,7 +156,7 @@ def implementsRoad(cls):
     def test_getPendingVehicle(self: cls):
         # Add and retrieve the vehicle.
         road: Road = self.getRoad(length=100, lanes=1)
-        vehicle: Vehicle = Mock()
+        vehicle: Vehicle = Mock(length=1)
         position = (0, 0)
         vehicle.position = position
         road.addPendingVehicle(vehicle)
@@ -153,10 +178,24 @@ def implementsRoad(cls):
         with self.assertRaises(IndexError):
             road.getPendingVehicle(position)
 
+    def test_addPendingVehicle_long(self: cls):
+        # Add and retrieve the vehicle.
+        road: Road = self.getRoad(length=100, lanes=1)
+        vehicle: Vehicle = Mock(length=2)
+        position = (1, 0)
+        vehicle.position = position
+        road.addPendingVehicle(vehicle)
+        result = road.getPendingVehicle(position)
+        self.assertEqual(result, vehicle)
+        result = road.getPendingVehicle((0, 0))
+        self.assertEqual(result, vehicle)
+        result = road.getPendingVehicle((2, 0))
+        self.assertIsNone(result)
+
     def test_getNextVehicle(self: cls):
         # Single lane.
         road: Road = self.getRoad(length=100, lanes=1)
-        vehicle: Vehicle = Mock()
+        vehicle: Vehicle = Mock(length=1)
         position = (10, 0)
         vehicle.position = position
         road.addVehicle(vehicle)
@@ -172,7 +211,7 @@ def implementsRoad(cls):
             self.assertIsNone(result, f'got invalid next vehicle x={x}')
         # Multiple lanes.
         road: Road = self.getRoad(length=100, lanes=2)
-        vehicle: Vehicle = Mock()
+        vehicle: Vehicle = Mock(length=1)
         position = (10, 0)
         vehicle.position = position
         road.addVehicle(vehicle)
@@ -204,7 +243,7 @@ def implementsRoad(cls):
     def test_getPreviousVehicle(self: cls):
         # Single lane.
         road: Road = self.getRoad(length=100, lanes=1)
-        vehicle: Vehicle = Mock()
+        vehicle: Vehicle = Mock(length=1)
         position = (90, 0)
         vehicle.position = position
         road.addVehicle(vehicle)
@@ -220,7 +259,7 @@ def implementsRoad(cls):
             self.assertEqual(result, vehicle, f'got invalid previous vehicle x={x}')
         # Multiple lanes.
         road: Road = self.getRoad(length=100, lanes=2)
-        vehicle: Vehicle = Mock()
+        vehicle: Vehicle = Mock(length=1)
         position = (90, 0)
         vehicle.position = position
         road.addVehicle(vehicle)
@@ -253,7 +292,7 @@ def implementsRoad(cls):
         road: Road = self.getRoad(length=100, lanes=1)
         vehicles: typing.List[Vehicle] = []
         for x in range(100):
-            vehicle = Mock()
+            vehicle = Mock(length=1)
             vehicle.position = (x, 0)
             vehicles.append(vehicle)
             road.addPendingVehicle(vehicle)
@@ -263,20 +302,23 @@ def implementsRoad(cls):
             self.assertEqual(result, vehicles[x], f'got invalid vehicle x={x}')
 
     def test_updateLanes(self: cls):
-        road: Road = self.getRoad(length=100, lanes=1)
+        road: Road = self.getRoad(length=10, lanes=1)
         vehicles: typing.List[Vehicle] = []
-        for x in range(100):
-            vehicle = Mock()
+        for x in range(10):
+            vehicle = Mock(length=1)
             vehicle.position = (x, 0)
             vehicles.append(vehicle)
             road.addVehicle(vehicle)
 
         # Check if updateLanes traverses all vehicles.
+        result: typing.List[Vehicle] = []
+
         def f(vehicle):
+            result.append(vehicle)
             return vehicle.position
 
         road._updateLanes(f)
-        self.assertCountEqual(road.getAllVehicles(), vehicles, 'not all vehicles were traversed')
+        self.assertCountEqual(result, vehicles, 'not all vehicles were traversed')
 
         # Check if vehicles outside of the road are removed.
         def g(vehicle):
@@ -288,15 +330,37 @@ def implementsRoad(cls):
         self.assertCountEqual(road.getAllVehicles(), vehicles[:-5], 'vehicles not removed')
         self.assertCountEqual(road.removed, vehicles[-5:], 'invalid vehicles removed')
 
+    def test_updateLanes_long(self: cls):
+        road: Road = self.getRoad(length=10, lanes=1)
+        vehicles: typing.List[Vehicle] = []
+        for i in range(1, 10, 2):
+            vehicle: Vehicle = Mock(length=2)
+            vehicle.position = (i, 0)
+            vehicles.append(vehicle)
+            road.addVehicle(vehicle)
+
+        # Check if updateLanes traverses all vehicles once.
+        result: typing.List[Vehicle] = []
+
+        def f(vehicle):
+            result.append(vehicle)
+            return vehicle.position
+
+        road._updateLanes(f)
+        self.assertCountEqual(result, vehicles, 'not all vehicles were traversed')
+
     cls.test_addVehicle = test_addVehicle
     cls.test_getVehicle = test_getVehicle
+    cls.test_addVehicle_long = test_addVehicle_long
     cls.test_allVehicles = test_allVehicles
     cls.test_addPendingVehicle = test_addPendingVehicle
     cls.test_getPendingVehicle = test_getPendingVehicle
+    cls.test_addPendingVehicle_long = test_addPendingVehicle_long
     cls.test_getNextVehicle = test_getNextVehicle
     cls.test_getPreviousVehicle = test_getPreviousVehicle
     cls.test_commitLanes = test_commitLanes
     cls.test_updateLanes = test_updateLanes
+    cls.test_updateLanes_long = test_updateLanes_long
     return cls
 
 

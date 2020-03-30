@@ -12,14 +12,16 @@ class MixedDispatcher(Dispatcher):
     penetration: float
     params: CarParams
 
-    def __init__(self, road: Road, count: int, penetration: float, params: CarParams):
-        super().__init__(road=road, count=count)
+    def __init__(self, road: Road, count: int, penetration: float, params: CarParams,
+                 length: int = 1):
+        super().__init__(road=road, count=count, length=length)
         self.penetration = penetration
         self.params = params
 
     def _newVehicle(self, position: Position) -> Vehicle:
         speed = self.road.controller.getMaxSpeed(position)
         if random.random() < self.penetration:
-            return AutonomousCar(position, velocity=speed, road=self.road)
+            return AutonomousCar(position, velocity=speed, road=self.road, length=self.length)
         else:
-            return Car(position, velocity=speed, road=self.road, params=self.params)
+            return Car(
+                position, velocity=speed, road=self.road, length=self.length, params=self.params)

@@ -14,4 +14,4 @@ class CarDispatcher(Dispatcher):
 
     def _newVehicle(self, position: Position) -> Vehicle:
         speed = self.road.controller.getMaxSpeed(position)
-        return Car(position, velocity=speed, road=self.road, params=self.params)
+        return Car(position, velocity=speed, road=self.road, length=self.length, params=self.params)

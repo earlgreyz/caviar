@@ -71,8 +71,9 @@ class Controller:
         ax, ay = vehicle.last_position
         bx, by = vehicle.position
         x, y = ax + (bx - ax) * factor, ay + (by - ay) * factor
-        rect = (x * self.SIZE, y * self.SIZE, self.SIZE, self.SIZE)
-        pygame.draw.ellipse(self.screen, self._getVehicleColor(vehicle), rect)
+        length = vehicle.length * self.SIZE
+        rect = (x * self.SIZE + 1, y * self.SIZE + 1, length - 2, self.SIZE - 2)
+        pygame.draw.rect(self.screen, self._getVehicleColor(vehicle), rect)
 
     def _getVehicleColor(self, vehicle: Vehicle) -> Color:
         limit = self.simulator.road.controller.getMaxSpeed(vehicle.position)

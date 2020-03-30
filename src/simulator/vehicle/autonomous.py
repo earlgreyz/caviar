@@ -6,8 +6,8 @@ from simulator.vehicle.vehicle import Vehicle
 class AutonomousCar(Vehicle):
     road: Road
 
-    def __init__(self, position: Position, velocity: int, road: Road):
-        super().__init__(position=position, velocity=velocity)
+    def __init__(self, position: Position, velocity: int, road: Road, length: int = 1):
+        super().__init__(position=position, velocity=velocity, length=length)
         self.road = road
 
     def beforeMove(self) -> Position:
@@ -34,9 +34,13 @@ class AutonomousCar(Vehicle):
         return self.position
 
     def _canChangeLane(self, destination: Position) -> bool:
-        return self.road.isProperPosition(position=destination) and \
-               self.road.getVehicle(position=destination) is None and \
-               self.road.getPendingVehicle(position=destination) is None
+        def canChangeTo(destination: Position) -> bool:
+            return self.road.isProperPosition(position=destination) and \
+                   self.road.getVehicle(position=destination) is None and \
+                   self.road.getPendingVehicle(position=destination) is None
+
+        x, lane = destination
+        return all(canChangeTo(destination=(x - i, lane)) for i in range(self.length))
 
     def _shouldChangeLane(self, destination: Position) -> bool:
         x, _ = self.position
@@ -59,7 +63,7 @@ class AutonomousCar(Vehicle):
             limit = self.road.controller.getMaxSpeed(position=destination)
             if isinstance(vehicle, AutonomousCar):
                 limit = vehicle.velocity
-            if x - previous <= limit:
+            if x - (self.length - 1) - previous <= limit:
                 return False
         return True
 

@@ -5,11 +5,14 @@ class Vehicle:
     position: Position
     last_position: Position
     velocity: int
+    length: int
+    moved: bool
 
-    def __init__(self, position: Position, velocity: int = 0):
+    def __init__(self, position: Position, velocity: int = 0, length: int = 1):
         self.position = position
         self.last_position = position
         self.velocity = velocity
+        self.length = length
 
     def beforeMove(self) -> Position:
         '''

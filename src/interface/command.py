@@ -31,6 +31,7 @@ def configProvider(file_path: str, cmd: str) -> typing.Dict[str, typing.Any]:
 # Dispatcher options.
 @click.option('--dispatch', default=6, help='Maximum number of cars dispatched each step')
 @click.option('--penetration', default=.5, help='Penetration rate of CAV')
+@click.option('--car-length', default=1, help='Number of cells occupied by a single car')
 @click.option('--pslow', default=.2, help='Probability a NS-model car will slow down')
 @click.option('--pchange', default=.5, help='Probability a NS-model car will change a lane')
 # Other oprtions.
@@ -45,6 +46,7 @@ def command(ctx: click.Context, **kwargs) -> None:
     max_speed: int = kwargs['max_speed']
     dispatch: int = kwargs['dispatch']
     penetration: float = kwargs['penetration']
+    car_length: int = kwargs['car_length']
     pslow: float = kwargs['pslow']
     pchange: float = kwargs['pchange']
     obstacles: typing.List[ObstacleValue] = kwargs['obstacles']
@@ -61,7 +63,7 @@ def command(ctx: click.Context, **kwargs) -> None:
     # Create a dispatcher.
     car_params = CarParams(slow=pslow, change=pchange)
     dispatcher = MixedDispatcher(
-        count=dispatch, road=road, penetration=penetration, params=car_params)
+        count=dispatch, road=road, penetration=penetration, params=car_params, length=car_length)
     # Create a simulator.
     ctx.obj = Simulator(road=road, dispatcher=dispatcher)
 

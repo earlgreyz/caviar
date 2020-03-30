@@ -21,8 +21,8 @@ class Car(Vehicle):
     road: Road
 
     def __init__(self, position: Position, velocity: int, road: Road,
-                 params: typing.Optional[CarParams] = None):
-        super().__init__(position=position, velocity=velocity)
+                 length: int = 1, params: typing.Optional[CarParams] = None):
+        super().__init__(position=position, velocity=velocity, length=length)
         self.road = road
         self.params = params if params is not None else CarParams()
 
@@ -48,9 +48,13 @@ class Car(Vehicle):
         return self.position
 
     def _canChangeLane(self, destination: Position) -> bool:
-        return self.road.isProperPosition(position=destination) and \
-               self.road.getVehicle(position=destination) is None and \
-               self.road.getPendingVehicle(position=destination) is None
+        def canChangeTo(destination: Position) -> bool:
+            return self.road.isProperPosition(position=destination) and \
+                   self.road.getVehicle(position=destination) is None and \
+                   self.road.getPendingVehicle(position=destination) is None
+
+        x, lane = destination
+        return all(canChangeTo(destination=(x - i, lane)) for i in range(self.length))
 
     def _shouldChangeLane(self, destination: Position) -> bool:
         x, _ = self.position
@@ -66,7 +70,7 @@ class Car(Vehicle):
         # Check if the distance to the previous vehicle is not smaller than road max speed.
         road_limit = self.road.controller.getMaxSpeed(position=destination)
         previous, vehicle = self.road.getPreviousVehicle(position=destination)
-        if vehicle is not None and x - previous <= road_limit:
+        if vehicle is not None and x - (self.length - 1) - previous <= road_limit:
             return False
         return True
 

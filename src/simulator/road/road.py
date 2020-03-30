@@ -102,6 +102,12 @@ class Road:
         :return: None.
         '''
         for vehicle in self.getAllVehicles():
+            vehicle.moved = False
+
+        for vehicle in self.getAllVehicles():
+            if vehicle.moved:
+                continue
+            vehicle.moved = True
             x, _ = f(vehicle)
             if x < self.length:
                 self.addPendingVehicle(vehicle=vehicle)
