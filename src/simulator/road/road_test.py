@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import Mock
 
 from simulator.road.road import Road, CollisionError
-from simulator.vehicle.vehicle import Vehicle
+from simulator.vehicle.vehicle import Vehicle, VehicleFlags
 
 
 def implementsRoad(cls):
@@ -305,7 +305,7 @@ def implementsRoad(cls):
         road: Road = self.getRoad(length=10, lanes=1)
         vehicles: typing.List[Vehicle] = []
         for x in range(10):
-            vehicle = Mock(length=1)
+            vehicle = Mock(length=1, flags=VehicleFlags.NONE)
             vehicle.position = (x, 0)
             vehicles.append(vehicle)
             road.addVehicle(vehicle)
@@ -334,7 +334,7 @@ def implementsRoad(cls):
         road: Road = self.getRoad(length=10, lanes=1)
         vehicles: typing.List[Vehicle] = []
         for i in range(1, 10, 2):
-            vehicle: Vehicle = Mock(length=2)
+            vehicle: Vehicle = Mock(length=2, flags=VehicleFlags.NONE)
             vehicle.position = (i, 0)
             vehicles.append(vehicle)
             road.addVehicle(vehicle)

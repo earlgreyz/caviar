@@ -2,7 +2,7 @@ import typing
 
 from simulator.position import Position, inBounds
 from simulator.road.speedcontroller import SpeedController
-from simulator.vehicle.vehicle import Vehicle
+from simulator.vehicle.vehicle import Vehicle, VehicleFlags
 
 
 class Road:
@@ -101,13 +101,16 @@ class Road:
         :param f: update function.
         :return: None.
         '''
+        # Reset MOVED flag to keep track of vehicles already moved.
         for vehicle in self.getAllVehicles():
-            vehicle.moved = False
+            vehicle.flags &= ~VehicleFlags.MOVED
 
         for vehicle in self.getAllVehicles():
-            if vehicle.moved:
+            # Skip vehicles with MOVED flag set.
+            if VehicleFlags.MOVED in vehicle.flags:
                 continue
-            vehicle.moved = True
+            vehicle.flags |= VehicleFlags.MOVED
+            # Apply move function.
             x, _ = f(vehicle)
             if x < self.length:
                 self.addPendingVehicle(vehicle=vehicle)

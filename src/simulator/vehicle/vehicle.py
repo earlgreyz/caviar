@@ -1,4 +1,11 @@
+import enum
+
 from simulator.position import Position
+
+
+class VehicleFlags(enum.Flag):
+    NONE = 0
+    MOVED = enum.auto()
 
 
 class Vehicle:
@@ -6,13 +13,15 @@ class Vehicle:
     last_position: Position
     velocity: int
     length: int
-    moved: bool
+
+    flags: VehicleFlags
 
     def __init__(self, position: Position, velocity: int = 0, length: int = 1):
         self.position = position
         self.last_position = position
         self.velocity = velocity
         self.length = length
+        self.flags = VehicleFlags.NONE
 
     def beforeMove(self) -> Position:
         '''
