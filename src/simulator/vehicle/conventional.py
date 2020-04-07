@@ -12,7 +12,7 @@ class Driver:
     change: float
     slow: float
 
-    def __init__(self, change: float = .25, slow: float = .25):
+    def __init__(self, change: float = .1, slow: float = .05):
         self.change = change
         self.slow = slow
 
