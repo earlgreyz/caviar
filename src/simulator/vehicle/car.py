@@ -1,3 +1,5 @@
+import typing
+
 from simulator.position import Position
 from simulator.road.road import Road
 from simulator.vehicle.vehicle import Vehicle
@@ -5,10 +7,12 @@ from simulator.vehicle.vehicle import Vehicle
 
 class Car(Vehicle):
     road: Road
+    path: typing.List[typing.Tuple[Position, int]]
 
     def __init__(self, position: Position, velocity: int, road: Road, length: int = 1):
         super().__init__(position=position, velocity=velocity, length=length)
         self.road = road
+        self.path = []
 
     def _getMaxSpeed(self, position: Position) -> int:
         '''

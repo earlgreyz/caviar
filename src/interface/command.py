@@ -79,7 +79,8 @@ def gui(ctx: click.Context, step: int, fps: int) -> None:
 
 @command.command()
 @click.option('--steps', default=1000, help='Number of simulation steps to run')
+@click.option('--individual', default=False, is_flag=True, help='Show individual statistics')
 @click.pass_context
-def cli(ctx: click.Context, steps: int):
+def cli(ctx: click.Context, steps: int, individual: bool):
     controller = CLIController(simulator=ctx.obj)
-    controller.run(steps=steps)
+    controller.run(steps=steps, individual=individual)

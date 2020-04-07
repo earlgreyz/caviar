@@ -1,8 +1,7 @@
 import click
-import typing
 
 from simulator.simulator import Simulator
-from simulator.statistics import Statistics
+from simulator.vehicle.car import Car
 
 
 class Controller:
@@ -11,9 +10,13 @@ class Controller:
     def __init__(self, simulator: Simulator):
         self.simulator = simulator
 
-    def run(self, steps: int):
-        statistics: typing.List[Statistics] = []
+    def run(self, steps: int, individual: bool):
         with click.progressbar(range(steps), steps) as bar:
             for _ in bar:
-                statistics.append(self.simulator.step())
-        print(statistics)
+                statistics = self.simulator.step()
+                if individual:
+                    for vehicle in self.simulator.road.removed:
+                        if isinstance(vehicle, Car):
+                            print(vehicle.path)
+                else:
+                    print(statistics)

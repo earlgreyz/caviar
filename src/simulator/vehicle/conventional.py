@@ -29,6 +29,7 @@ class ConventionalCar(Car):
         self.driver = driver if driver is not None else Driver()
 
     def beforeMove(self) -> Position:
+        self.path.append((self.position, self.velocity))
         self.last_position = self.position
         x, lane = self.position
         # Try to switch lanes in random order.

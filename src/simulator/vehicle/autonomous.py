@@ -9,6 +9,7 @@ class AutonomousCar(Car):
         super().__init__(position=position, velocity=velocity, road=road, length=length)
 
     def beforeMove(self) -> Position:
+        self.path.append((self.position, self.velocity))
         self.last_position = self.position
         x, lane = self.position
         # Find the best lane change.
