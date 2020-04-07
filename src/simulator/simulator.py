@@ -2,7 +2,7 @@ from simulator.dispatcher.dispatcher import Dispatcher
 from simulator.road.road import Road
 from simulator.statistics import Statistics
 from simulator.vehicle.autonomous import isAutonomous
-from simulator.vehicle.car import isConventional
+from simulator.vehicle.conventional import isConventional
 
 
 class Simulator:

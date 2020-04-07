@@ -1,14 +1,12 @@
 from simulator.position import Position
 from simulator.road.road import Road
+from simulator.vehicle.car import Car
 from simulator.vehicle.vehicle import Vehicle
 
 
-class AutonomousCar(Vehicle):
-    road: Road
-
+class AutonomousCar(Car):
     def __init__(self, position: Position, velocity: int, road: Road, length: int = 1):
-        super().__init__(position=position, velocity=velocity, length=length)
-        self.road = road
+        super().__init__(position=position, velocity=velocity, road=road, length=length)
 
     def beforeMove(self) -> Position:
         self.last_position = self.position
@@ -18,11 +16,10 @@ class AutonomousCar(Vehicle):
         best_limit = self._getMaxSpeed(position=self.position)
         for change in [-1, 1]:
             destination = (x, lane + change)
-            if not self._canChangeLane(destination) or not self._shouldChangeLane(destination):
-                continue
-            limit = self._getMaxSpeed(position=destination)
-            if limit > best_limit:
-                best_change, best_limit = change, limit
+            if self._changeLane(destination):
+                limit = self._getMaxSpeed(position=destination)
+                if limit > best_limit:
+                    best_change, best_limit = change, limit
         # Switch the lanes.
         self.position = x, lane + best_change
         return self.position
@@ -33,50 +30,15 @@ class AutonomousCar(Vehicle):
         self.position = x + self.velocity, lane
         return self.position
 
-    def _canChangeLane(self, destination: Position) -> bool:
-        def canChangeTo(destination: Position) -> bool:
-            return self.road.isProperPosition(position=destination) and \
-                   self.road.getVehicle(position=destination) is None and \
-                   self.road.getPendingVehicle(position=destination) is None
+    def _getMaxSpeedBonus(self, next: Vehicle, position: Position) -> int:
+        if isinstance(next, AutonomousCar):
+            return next.velocity
+        return 0
 
-        x, lane = destination
-        return all(canChangeTo(destination=(x - i, lane)) for i in range(self.length))
-
-    def _shouldChangeLane(self, destination: Position) -> bool:
-        x, _ = self.position
-        # Check if the speed limit on the destination lane is higher.
-        limit = self._getMaxSpeed(self.position)
-        destination_limit = self._getMaxSpeed(position=destination)
-        if destination_limit <= limit:
-            return False
-        # Check if the distance to the next vehicle is not smaller than the velocity.
-        next, vehicle = self.road.getNextVehicle(position=destination)
-        if vehicle is not None:
-            distance = next - x
-            if isinstance(vehicle, AutonomousCar):
-                distance += vehicle.velocity
-            if distance <= self.velocity:
-                return False
-        # Check if the distance to the previous vehicle is not smaller than road max speed.
-        previous, vehicle = self.road.getPreviousVehicle(position=destination)
-        if vehicle is not None:
-            limit = self.road.controller.getMaxSpeed(position=destination)
-            if isinstance(vehicle, AutonomousCar):
-                limit = vehicle.velocity
-            if x - (self.length - 1) - previous <= limit:
-                return False
-        return True
-
-    def _getMaxSpeed(self, position: Position) -> int:
-        x, _ = position
-        limit = self.road.controller.getMaxSpeed(position=position)
-        next, vehicle = self.road.getNextVehicle(position=position)
-        if vehicle is None:
-            return limit
-        distance = next - x
-        if isinstance(vehicle, AutonomousCar):
-            distance += vehicle.velocity
-        return min(limit, distance - 1)
+    def _getSafeChangeDistance(self, previous: Vehicle, destination: Position) -> int:
+        if isinstance(previous, AutonomousCar):
+            return previous.velocity
+        return super()._getSafeChangeDistance(previous, destination)
 
 
 def isAutonomous(vehicle: Vehicle) -> bool:

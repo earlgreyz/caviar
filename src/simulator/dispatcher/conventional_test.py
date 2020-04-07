@@ -1,16 +1,16 @@
 import unittest
 from unittest.mock import Mock
 
-from simulator.dispatcher.car import CarDispatcher
+from simulator.dispatcher.conventional import ConventionalDispatcher
 from simulator.dispatcher.dispatcher import Dispatcher
 from simulator.dispatcher.dispatcher_test import implementsDispatcher
-from simulator.vehicle.car import CarParams
+from simulator.vehicle.conventional import Driver
 
 
 @implementsDispatcher
 class CarDispatcherTestCase(unittest.TestCase):
     def getDispatcher(self) -> Dispatcher:
-        return CarDispatcher(road=Mock(), count=1, params=CarParams())
+        return ConventionalDispatcher(road=Mock(), count=1, driver=Driver())
 
 
 if __name__ == '__main__':

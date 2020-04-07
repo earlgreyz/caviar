@@ -393,6 +393,21 @@ class RoadTestCase(unittest.TestCase):
         self.assertFalse(road.isProperPosition(position=(0, 1)))
         self.assertFalse(road.isProperPosition(position=(0, -1)))
 
+    def test_isSafePosition(self):
+        road = Road(length=100, lanes_count=5)
+        proper = [True, True, True, False, False, False, False]
+        vehicle = [None, Mock(), Mock(), None, None, Mock(), Mock()]
+        pending = [Mock(), None, Mock(), None, Mock(), None, Mock()]
+        for p, v, pv in zip(proper, vehicle, pending):
+            road.isProperPosition = Mock(return_value=p)
+            road.getVehicle = Mock(return_value=v)
+            road.getPendingVehicle = Mock(return_value=pv)
+            self.assertFalse(road.isSafePosition(position=(0, 0)))
+        road.isProperPosition = Mock(return_value=True)
+        road.getVehicle = Mock(return_value=None)
+        road.getPendingVehicle = Mock(return_value=None)
+        self.assertTrue(road.isSafePosition(position=(0, 0)))
+
     def test_getAverageVelocityFiltered(self):
         road = Road(100, 1)
         vehicles: typing.List[Vehicle] = []

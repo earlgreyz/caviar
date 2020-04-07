@@ -87,6 +87,17 @@ class Road:
         x, lane = position
         return inBounds(lane, 0, self.lanes_count) and inBounds(x, 0, self.length)
 
+    def isSafePosition(self, position: Position) -> bool:
+        '''
+        Checks if a position is safe to place a vehicle in.
+        :param position: position on the  road.
+        :return: if a position is safe.
+        '''
+        return \
+            self.isProperPosition(position=position) and \
+            self.getVehicle(position=position) is None and \
+            self.getPendingVehicle(position=position) is None
+
     def _commitLanes(self) -> None:
         '''
         Moves the pending vehicles to the actual road and clears the pending road.

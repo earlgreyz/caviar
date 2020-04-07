@@ -1,92 +1,86 @@
-import random
-import typing
-
 from simulator.position import Position
 from simulator.road.road import Road
 from simulator.vehicle.vehicle import Vehicle
-from util.rand import shuffled
-
-
-class CarParams:
-    lane_change_probability: float
-    slow_down_probability: float
-
-    def __init__(self, change: float = .5, slow: float = .2):
-        self.lane_change_probability = change
-        self.slow_down_probability = slow
 
 
 class Car(Vehicle):
-    params: CarParams
     road: Road
 
-    def __init__(self, position: Position, velocity: int, road: Road,
-                 length: int = 1, params: typing.Optional[CarParams] = None):
+    def __init__(self, position: Position, velocity: int, road: Road, length: int = 1):
         super().__init__(position=position, velocity=velocity, length=length)
         self.road = road
-        self.params = params if params is not None else CarParams()
-
-    def beforeMove(self) -> Position:
-        self.last_position = self.position
-        x, lane = self.position
-        # Try to switch lanes in random order.
-        for change in shuffled([-1, 1]):
-            destination = (x, lane + change)
-            if self._changeLane(destination):
-                self.position = destination
-                break
-        return self.position
-
-    def move(self) -> Position:
-        x, lane = self.position
-        if self.velocity > 0 and random.random() < self.params.slow_down_probability:
-            self.velocity -= 1
-        else:
-            self.velocity += 1
-        self.velocity = min(self.velocity, self._getMaxSpeed(position=self.position))
-        self.position = x + self.velocity, lane
-        return self.position
-
-    def _canChangeLane(self, destination: Position) -> bool:
-        def canChangeTo(destination: Position) -> bool:
-            return self.road.isProperPosition(position=destination) and \
-                   self.road.getVehicle(position=destination) is None and \
-                   self.road.getPendingVehicle(position=destination) is None
-
-        x, lane = destination
-        return all(canChangeTo(destination=(x - i, lane)) for i in range(self.length))
-
-    def _shouldChangeLane(self, destination: Position) -> bool:
-        x, _ = self.position
-        # Check if the speed limit on the destination lane is higher.
-        limit = self._getMaxSpeed(self.position)
-        destination_limit = self._getMaxSpeed(position=destination)
-        if destination_limit <= limit:
-            return False
-        # Check if the distance to the next vehicle is not smaller than the velocity.
-        next, vehicle = self.road.getNextVehicle(position=destination)
-        if vehicle is not None and next - x <= self.velocity:
-            return False
-        # Check if the distance to the previous vehicle is not smaller than road max speed.
-        road_limit = self.road.controller.getMaxSpeed(position=destination)
-        previous, vehicle = self.road.getPreviousVehicle(position=destination)
-        if vehicle is not None and x - (self.length - 1) - previous <= road_limit:
-            return False
-        return True
-
-    def _changeLane(self, destination: Position) -> bool:
-        if not self._canChangeLane(destination) or not self._shouldChangeLane(destination):
-            return False
-        return random.random() < self.params.lane_change_probability
 
     def _getMaxSpeed(self, position: Position) -> int:
+        '''
+        Returns maximum speed a car can go without breaking speed limits or causing an accident.
+        :param position: position on the road.
+        :return: maximum speed.
+        '''
         x, _ = position
         limit = self.road.controller.getMaxSpeed(position=position)
         next, vehicle = self.road.getNextVehicle(position=position)
         if vehicle is None:
             return limit
-        return min(limit, next - x - 1)
+        distance = next - x - 1 + self._getMaxSpeedBonus(next=vehicle, position=position)
+        return min(limit, distance)
 
+    def _getMaxSpeedBonus(self, next: Vehicle, position: Position) -> int:
+        '''
+        Get a max speed bonus based on vehicle intercommunication.
+        :param next: next vehicle.
+        :param position: position on the road.
+        :return: speed bonus.
+        '''
+        return 0
 
-def isConventional(vehicle: Vehicle) -> bool:
-    return isinstance(vehicle, Car)
+    def _isChangePossible(self, destination: Position) -> bool:
+        '''
+        Checks if a lane is not occupied at the whole length of a car.
+        :param destination: position on the road.
+        :return: if it is possible to change the lane.
+        '''
+        x, lane = destination
+        return all(self.road.isSafePosition(position=(x - i, lane)) for i in range(self.length))
+
+    def _isChangeBeneficial(self, destination: Position) -> bool:
+        '''
+        Checks if a vehicle will benefit from the lane change with a faster maximum velocity.
+        :param destination: position on the road.
+        :return: if it is beneficial to change the lane.
+        '''
+        limit = self._getMaxSpeed(self.position)
+        destination_limit = self._getMaxSpeed(position=destination)
+        return destination_limit > limit
+
+    def _isChangeSafe(self, destination: Position) -> bool:
+        '''
+        Check if the distance to the previous vehicle is large enough for change to be safe.
+        :param destination: position on the road.
+        :return: if it is safe to change the lane.
+        '''
+        x, _ = self.position
+        previous, vehicle = self.road.getPreviousVehicle(position=destination)
+        if vehicle is None:
+            return True
+        limit = self._getSafeChangeDistance(previous=vehicle, destination=destination)
+        return x - (self.length - 1) - previous > limit
+
+    def _getSafeChangeDistance(self, previous: Vehicle, destination: Position) -> int:
+        '''
+        Returns a safe distance to the previous vehicle to change a lane.
+        :type previous: previous vehicle.
+        :param destination: position on the road.
+        :return: safe distance.
+        '''
+        return self.road.controller.getMaxSpeed(position=destination)
+
+    def _changeLane(self, destination: Position) -> bool:
+        '''
+        Returns whether to change the lane to destination.
+        :param destination: position on the road.
+        :return: whether to change the lane.
+        '''
+        return \
+            self._isChangePossible(destination=destination) and \
+            self._isChangeBeneficial(destination=destination) and \
+            self._isChangeSafe(destination=destination)

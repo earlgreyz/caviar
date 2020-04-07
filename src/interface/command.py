@@ -12,7 +12,7 @@ from simulator.dispatcher.mixed import MixedDispatcher
 from simulator.road.dense import DenseRoad
 from simulator.road.speedcontroller import SpeedController
 from simulator.simulator import Simulator
-from simulator.vehicle.car import CarParams
+from simulator.vehicle.conventional import Driver
 
 
 def configProvider(file_path: str, cmd: str) -> typing.Dict[str, typing.Any]:
@@ -61,9 +61,9 @@ def command(ctx: click.Context, **kwargs) -> None:
     for obstacle in obstacles:
         addObstacle(road=road, obstacle=obstacle)
     # Create a dispatcher.
-    car_params = CarParams(slow=pslow, change=pchange)
+    driver = Driver(slow=pslow, change=pchange)
     dispatcher = MixedDispatcher(
-        count=dispatch, road=road, penetration=penetration, params=car_params, length=car_length)
+        count=dispatch, road=road, penetration=penetration, driver=driver, length=car_length)
     # Create a simulator.
     ctx.obj = Simulator(road=road, dispatcher=dispatcher)
 

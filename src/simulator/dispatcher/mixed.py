@@ -3,25 +3,25 @@ import random
 from simulator.dispatcher.dispatcher import Dispatcher
 from simulator.position import Position
 from simulator.road.road import Road
-from simulator.vehicle.car import Car, CarParams
+from simulator.vehicle.conventional import ConventionalCar, Driver
 from simulator.vehicle.autonomous import AutonomousCar
 from simulator.vehicle.vehicle import Vehicle
 
 
 class MixedDispatcher(Dispatcher):
     penetration: float
-    params: CarParams
+    driver: Driver
 
-    def __init__(self, road: Road, count: int, penetration: float, params: CarParams,
+    def __init__(self, road: Road, count: int, penetration: float, driver: Driver,
                  length: int = 1):
         super().__init__(road=road, count=count, length=length)
         self.penetration = penetration
-        self.params = params
+        self.driver = driver
 
     def _newVehicle(self, position: Position) -> Vehicle:
         speed = self.road.controller.getMaxSpeed(position)
+        params = dict(position=position, velocity=speed, road=self.road, length=self.length)
         if random.random() < self.penetration:
-            return AutonomousCar(position, velocity=speed, road=self.road, length=self.length)
+            return AutonomousCar(**params)
         else:
-            return Car(
-                position, velocity=speed, road=self.road, length=self.length, params=self.params)
+            return ConventionalCar(**params, driver=self.driver)
