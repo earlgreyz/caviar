@@ -3,7 +3,8 @@ import unittest
 from unittest.mock import Mock
 
 from simulator.position import Position
-from simulator.vehicle.car import Car
+from simulator.vehicle.car import Car, isCar
+from simulator.vehicle.vehicle import Vehicle
 
 
 class CarTestCase(unittest.TestCase):
@@ -105,6 +106,12 @@ class CarTestCase(unittest.TestCase):
         car._isChangeBeneficial = Mock(return_value=True)
         car._isChangeSafe = Mock(return_value=True)
         self.assertTrue(car._changeLane(destination=(0, 1)))
+
+    def test_isAutonomous(self):
+        car = Car(position=(0, 0), velocity=1, road=Mock())
+        self.assertTrue(isCar(car))
+        vehicle = Vehicle(position=(0, 0), velocity=0)
+        self.assertFalse(isCar(vehicle))
 
 
 if __name__ == '__main__':

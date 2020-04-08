@@ -88,3 +88,7 @@ class Car(Vehicle):
             self._isChangePossible(destination=destination) and \
             self._isChangeBeneficial(destination=destination) and \
             self._isChangeSafe(destination=destination)
+
+
+def isCar(vehicle: Vehicle) -> bool:
+    return isinstance(vehicle, Car)
