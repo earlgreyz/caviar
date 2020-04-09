@@ -13,6 +13,7 @@ class Road:
     length: int
     lanes_count: int
 
+    emergency: typing.Set[Vehicle]
     removed: typing.List[Vehicle]
 
     def __init__(self, length: int, lanes_count: int,
@@ -20,16 +21,27 @@ class Road:
         self.length = length
         self.lanes_count = lanes_count
         self.controller = controller if controller is not None else SpeedController()
-        self.removed = []
+        self.removed = list()
+        self.emergency = set()
 
     def addVehicle(self, vehicle: Vehicle) -> None:
         '''
         Adds a new vehicle to the road.
-        :param position: position on the road.
         :param vehicle: vehicle to add.
         :return: None.
         '''
         raise NotImplementedError()
+
+    def addEmergencyVehicle(self, vehicle: Vehicle) -> None:
+        '''
+        Adds a new emergency vehicle to the  road.
+        :param vehicle: vehicle to add.
+        :return: None.
+        '''
+        if not vehicle.isEmergency():
+            raise ValueError('adding non emergency vehicle not allowed')
+        self.emergency.add(vehicle)
+        self.addVehicle(vehicle=vehicle)
 
     def getVehicle(self, position: Position) -> typing.Optional[Vehicle]:
         '''
@@ -49,7 +61,6 @@ class Road:
     def addPendingVehicle(self, vehicle: Vehicle) -> None:
         '''
         Adds the vehicle to the road which will be added on the next commit.
-        :param position: position on the road.
         :param vehicle: vehicle to add.
         :return: None.
         '''
@@ -127,8 +138,13 @@ class Road:
             if x < self.length:
                 self.addPendingVehicle(vehicle=vehicle)
             else:
-                self.removed.append(vehicle)
+                self._removeVehicle(vehicle=vehicle)
         self._commitLanes()
+
+    def _removeVehicle(self, vehicle: Vehicle) -> None:
+        self.removed.append(vehicle)
+        if vehicle.isEmergency():
+            self.emergency.remove(vehicle)
 
     def step(self) -> None:
         '''

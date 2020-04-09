@@ -36,6 +36,10 @@ class VehicleTestCase(unittest.TestCase):
         self.assertEqual(vehicle.position, position, 'positions differs')
         self.assertEqual(vehicle.last_position, position, 'last position not initialized')
 
+    def test_isEmergency(self):
+        vehicle = Vehicle(position=(0, 0))
+        self.assertFalse(vehicle.isEmergency())
+
     def test_interface(self):
         vehicle = Vehicle(position=(0, 0))
         with self.assertRaises(NotImplementedError, msg='expected beforeMove to be virtual'):

@@ -36,3 +36,10 @@ class Vehicle:
         :return: new position.
         '''
         raise NotImplementedError
+
+    def isEmergency(self) -> bool:
+        '''
+        Returns whether a vehicle is an emergency vehicle.
+        :return: if a vehicle is an emergency vehicle.
+        '''
+        return False
