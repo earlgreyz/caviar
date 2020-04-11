@@ -38,10 +38,10 @@ class DenseRoad(Road):
         return self.lanes[lane][x]
 
     def getAllVehicles(self) -> typing.Generator[Vehicle, None, None]:
-        for lane in self.lanes:
-            for vehicle in reversed(lane):
-                if vehicle is not None:
-                    yield vehicle
+        for x in reversed(range(self.length)):
+            for lane in range(self.lanes_count):
+                if self.lanes[lane][x] is not None:
+                    yield self.lanes[lane][x]
 
     def addPendingVehicle(self, vehicle: Vehicle) -> None:
         x, lane = vehicle.position
