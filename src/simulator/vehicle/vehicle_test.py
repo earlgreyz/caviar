@@ -38,7 +38,7 @@ class VehicleTestCase(unittest.TestCase):
 
     def test_isEmergency(self):
         vehicle = Vehicle(position=(0, 0))
-        self.assertFalse(vehicle.isEmergency())
+        self.assertFalse(vehicle.isEmergencyVehicle())
 
     def test_interface(self):
         vehicle = Vehicle(position=(0, 0))

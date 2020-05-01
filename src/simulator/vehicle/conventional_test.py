@@ -10,7 +10,7 @@ from simulator.vehicle.vehicle_test import implementsVehicle
 @implementsVehicle
 class ConventionalCarTestCase(unittest.TestCase):
     def getVehicle(self, position: Position) -> Vehicle:
-        road = Mock()
+        road = Mock(emergency=[])
         road.isProperPosition.return_value = False
         road.getNextVehicle.return_value = (100, None)
         road.getPreviousVehicle.return_value = (-1, None)
@@ -21,7 +21,7 @@ class ConventionalCarTestCase(unittest.TestCase):
     @patch('simulator.vehicle.conventional.shuffled')
     def test_beforeMove(self, mocked_shuffled):
         mocked_shuffled.side_effect = lambda xs: xs
-        road = Mock()
+        road = Mock(emergency=[])
         # Lanes not changed.
         car = ConventionalCar(position=(42, 1), velocity=5, road=road)
         car._changeLane = Mock(return_value=False)

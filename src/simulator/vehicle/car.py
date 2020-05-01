@@ -2,13 +2,15 @@ import typing
 
 from simulator.position import Position
 from simulator.road.road import Road
-from simulator.vehicle.vehicle import Vehicle
+from simulator.vehicle.vehicle import Vehicle, VehicleFlags
 
 
 class Car(Vehicle):
     road: Road
     path: typing.List[typing.Tuple[Position, int]]
     limit: int
+    signal: int = 30
+    emergency_p: float = .5
 
     def __init__(self, position: Position, velocity: int, road: Road,
                  length: int = 1, limit: int = 0):
@@ -107,6 +109,39 @@ class Car(Vehicle):
             self._isChangePossible(destination=destination) and \
             self._isChangeBeneficial(destination=destination) and \
             self._isChangeSafe(destination=destination)
+
+    def _isEmergency(self) -> bool:
+        '''
+        Returns whether there is an emergency vehicle approaching.
+        :return: whether there is an emergency.
+        '''
+        x, _ = self.position
+        for emergency in self.road.emergency:
+            ex, _ = emergency.position
+            if abs(x - ex) < self.signal:
+                return True
+        return False
+
+    def _changeEmergency(self, destination: Position) -> bool:
+        '''
+        Returns whether to change lane to make space for an emergency vehicle.
+        :param destination: position on the road.
+        :return: whether to change to a given lane.
+        '''
+        if self.flags & VehicleFlags.CHANGED:
+            return False
+
+        _, lane = destination
+        if lane == Road.EMERGENCY_LANE:
+            return False
+
+        if not self._isChangePossible(destination=destination):
+            return False
+
+        # Change when it is safe or a car behind us has not yet let anyone in.
+        _, vehicle = self.road.getPreviousVehicle(position=destination)
+        flags = vehicle.flags if vehicle is not None else VehicleFlags.NONE
+        return flags & VehicleFlags.NICE or self._isChangeSafe(destination=destination)
 
 
 def isCar(vehicle: Vehicle) -> bool:

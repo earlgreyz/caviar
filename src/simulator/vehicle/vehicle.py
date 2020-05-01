@@ -6,6 +6,8 @@ from simulator.position import Position
 class VehicleFlags(enum.Flag):
     NONE = 0
     MOVED = enum.auto()
+    CHANGED = enum.auto()
+    NICE = enum.auto()
 
 
 class Vehicle:
@@ -37,7 +39,7 @@ class Vehicle:
         '''
         raise NotImplementedError
 
-    def isEmergency(self) -> bool:
+    def isEmergencyVehicle(self) -> bool:
         '''
         Returns whether a vehicle is an emergency vehicle.
         :return: if a vehicle is an emergency vehicle.

@@ -16,6 +16,9 @@ class Road:
     emergency: typing.Set[Vehicle]
     removed: typing.List[Vehicle]
 
+    # Constants.
+    EMERGENCY_LANE: int = 1
+
     def __init__(self, length: int, lanes_count: int,
                  controller: typing.Optional[SpeedController] = None):
         self.length = length
@@ -38,7 +41,7 @@ class Road:
         :param vehicle: vehicle to add.
         :return: None.
         '''
-        if not vehicle.isEmergency():
+        if not vehicle.isEmergencyVehicle():
             raise ValueError('adding non emergency vehicle not allowed')
         self.emergency.add(vehicle)
         self.addVehicle(vehicle=vehicle)
@@ -143,7 +146,7 @@ class Road:
 
     def _removeVehicle(self, vehicle: Vehicle) -> None:
         self.removed.append(vehicle)
-        if vehicle.isEmergency():
+        if vehicle.isEmergencyVehicle():
             self.emergency.remove(vehicle)
 
     def step(self) -> None:

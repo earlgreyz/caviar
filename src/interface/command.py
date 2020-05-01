@@ -8,7 +8,7 @@ from interface.obstacle import ObstacleParamType, ObstacleValue, addObstacle
 from interface.gui.controller import Controller as GUIController
 from interface.cli.controller import Controller as CLIController
 
-from simulator.dispatcher.mixed import MixedDispatcher
+from simulator.dispatcher.emergency import EmergencyDispatcher
 from simulator.road.dense import DenseRoad
 from simulator.road.speedcontroller import SpeedController
 from simulator.simulator import Simulator
@@ -38,6 +38,7 @@ def configProvider(file_path: str, cmd: str) -> typing.Dict[str, typing.Any]:
 @click.option('--symmetry', default=False, is_flag=True, help='Do not use left lane to overtake')
 @click.option('--limit', default=0, help='Difference in maximum speed between vehicles')
 # Other options.
+@click.option('--emergency', default=0, help='Dispatch an emergency vehicle every N steps')
 @click.option('--seed', type=int, help='Seed for the RNG')
 @click.option('--buffer', default=10, help='Number of steps in moving average calculation')
 # Configuration file option.
@@ -55,6 +56,7 @@ def command(ctx: click.Context, **kwargs) -> None:
     pchange: float = kwargs['pchange']
     symmetry: bool = kwargs['symmetry']
     limit: int = kwargs['limit']
+    emergency: int = kwargs['emergency']
     obstacles: typing.List[ObstacleValue] = kwargs['obstacles']
     seed: typing.Optional[int] = kwargs['seed']
     buffer: int = kwargs['buffer']
@@ -69,9 +71,11 @@ def command(ctx: click.Context, **kwargs) -> None:
         addObstacle(road=road, obstacle=obstacle)
     # Create a dispatcher.
     driver = Driver(slow=pslow, change=pchange, symmetry=symmetry)
-    dispatcher = MixedDispatcher(
+    driver = Driver(slow=pslow, change=pchange)
+    dispatcher = EmergencyDispatcher(
         count=dispatch, road=road, penetration=penetration,
-        driver=driver, length=car_length, limit=limit)
+        driver=driver, length=car_length, limit=limit,
+        frequency=emergency)
     # Create a simulator.
     ctx.obj = Simulator(road=road, dispatcher=dispatcher, buffer_size=buffer)
 

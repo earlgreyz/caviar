@@ -4,7 +4,7 @@ import typing
 from simulator.position import Position
 from simulator.road.road import Road
 from simulator.vehicle.car import Car
-from simulator.vehicle.vehicle import Vehicle
+from simulator.vehicle.vehicle import Vehicle, VehicleFlags
 from util.rand import shuffled
 
 
@@ -34,6 +34,12 @@ class ConventionalCar(Car):
     def beforeMove(self) -> Position:
         self.path.append((self.position, self.velocity))
         self.last_position = self.position
+
+        if self._isEmergency():
+            return self.beforeEmergency()
+        else:
+            self.flags &= ~(VehicleFlags.CHANGED | VehicleFlags.NICE)
+
         x, lane = self.position
         # Try to switch lanes in random order.
         for change in shuffled([-1, 1]):
@@ -53,6 +59,24 @@ class ConventionalCar(Car):
             self.velocity += 1
         self.velocity = min(self.velocity, self._getMaxSpeed(position=self.position))
         self.position = x + self.velocity, lane
+        return self.position
+
+    def beforeEmergency(self) -> Position:
+        x, lane = self.position
+        # From emergency lane you can switch both ways.
+        changes = [1]
+        if lane == Road.EMERGENCY_LANE:
+            changes = [-1, 1]
+
+        for change in shuffled(changes):
+            destination = (x, lane + change)
+            if self._changeEmergency(destination=destination):
+                self.position = destination
+                self.flags &= VehicleFlags.CHANGED
+                _, vehicle = self.road.getPreviousVehicle(position=destination)
+                if vehicle is not None:
+                    vehicle.flags &= VehicleFlags.NICE
+                break
         return self.position
 
     def _changeLane(self, destination: Position, force: bool = False) -> bool:

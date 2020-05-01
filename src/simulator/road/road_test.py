@@ -307,7 +307,7 @@ def implementsRoad(cls):
         vehicles: typing.List[Vehicle] = []
         for x in range(10):
             vehicle = Mock(length=1, flags=VehicleFlags.NONE)
-            vehicle.isEmergency.return_value = False
+            vehicle.isEmergencyVehicle.return_value = False
             vehicle.position = (x, 0)
             vehicles.append(vehicle)
             road.addVehicle(vehicle)
@@ -337,7 +337,7 @@ def implementsRoad(cls):
         vehicles: typing.List[Vehicle] = []
         for i in range(1, 10, 2):
             vehicle: Vehicle = Mock(length=2, flags=VehicleFlags.NONE)
-            vehicle.isEmergency.return_value = False
+            vehicle.isEmergencyVehicle.return_value = False
             vehicle.position = (i, 0)
             vehicles.append(vehicle)
             road.addVehicle(vehicle)
@@ -390,10 +390,10 @@ class RoadTestCase(unittest.TestCase):
     def test_addEmergencyVehicle(self):
         road: Road = Road(length=100, lanes_count=1)
         vehicle = Mock(position=(0, 0))
-        vehicle.isEmergency.return_value = False
+        vehicle.isEmergencyVehicle.return_value = False
         with self.assertRaises(ValueError):
             road.addEmergencyVehicle(vehicle)
-        vehicle.isEmergency.return_value = True
+        vehicle.isEmergencyVehicle.return_value = True
         road.addVehicle = Mock()
         road.addEmergencyVehicle(vehicle)
         road.addVehicle.assert_called_once_with(vehicle=vehicle)
@@ -402,9 +402,9 @@ class RoadTestCase(unittest.TestCase):
     def test_removeVehicle(self):
         road: Road = Road(length=100, lanes_count=1)
         vehicle = Mock(position=(0, 0))
-        vehicle.isEmergency.return_value = False
+        vehicle.isEmergencyVehicle.return_value = False
         emergency = Mock(position=(1, 0))
-        emergency.isEmergency.return_value = True
+        emergency.isEmergencyVehicle.return_value = True
         road.emergency = {emergency}
         # Remove non-emergency vehicle.
         road._removeVehicle(vehicle)
