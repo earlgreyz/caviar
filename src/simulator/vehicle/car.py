@@ -10,7 +10,6 @@ class Car(Vehicle):
     path: typing.List[typing.Tuple[Position, int]]
     limit: int
     signal: int = 30
-    emergency_p: float = .5
 
     def __init__(self, position: Position, velocity: int, road: Road,
                  length: int = 1, limit: int = 0):
@@ -118,7 +117,7 @@ class Car(Vehicle):
         x, _ = self.position
         for emergency in self.road.emergency:
             ex, _ = emergency.position
-            if abs(x - ex) < self.signal:
+            if ex < x and x - ex < self.signal:
                 return True
         return False
 
@@ -141,7 +140,7 @@ class Car(Vehicle):
         # Change when it is safe or a car behind us has not yet let anyone in.
         _, vehicle = self.road.getPreviousVehicle(position=destination)
         flags = vehicle.flags if vehicle is not None else VehicleFlags.NONE
-        return flags & VehicleFlags.NICE or self._isChangeSafe(destination=destination)
+        return self._isChangeSafe(destination=destination) or not flags & VehicleFlags.NICE
 
 
 def isCar(vehicle: Vehicle) -> bool:
