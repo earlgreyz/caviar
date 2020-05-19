@@ -1,6 +1,6 @@
 from simulator.dispatcher.dispatcher import Dispatcher
 from simulator.road.road import Road
-from simulator.statistics import Statistics
+from simulator.statistics import Statistics, Filter, combine, filterLane
 from simulator.vehicle.autonomous import isAutonomous
 from simulator.vehicle.car import isCar
 from simulator.vehicle.conventional import isConventional
@@ -30,4 +30,18 @@ class Simulator:
             average_velocity_conventional=self.road.getAverageVelocityFiltered(isConventional),
             steps=self.steps,
             throughput=len(self.road.removed),
+            lanes={
+                lane: self._getStatisticsFiltered(filterLane(lane))
+                for lane in range(self.road.lanes_count)
+            }
+        )
+
+    def _getStatisticsFiltered(self, *predicates: Filter) -> Statistics:
+        return dict(
+            average_velocity=self.road.getAverageVelocityFiltered(
+                combine(*predicates, isCar)),
+            average_velocity_autonomous=self.road.getAverageVelocityFiltered(
+                combine(*predicates, isAutonomous)),
+            average_velocity_conventional=self.road.getAverageVelocityFiltered(
+                combine(*predicates, isConventional)),
         )
