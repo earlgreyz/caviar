@@ -14,6 +14,7 @@ class ConventionalCarTestCase(unittest.TestCase):
         road.isProperPosition.return_value = False
         road.getNextVehicle.return_value = (100, None)
         road.getPreviousVehicle.return_value = (-1, None)
+        road.emergency = []
         road.controller = Mock()
         road.controller.getMaxSpeed.return_value = 5
         return ConventionalCar(position=position, velocity=1, road=road)
