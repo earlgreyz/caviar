@@ -23,7 +23,7 @@ class SizedList(typing.Generic[T]):
             yield self.items[i]
 
     def __getitem__(self, item: int) -> T:
-        if item < 0 or item >= len(self):
+        if item < -len(self) or item >= len(self):
             raise KeyError
         return self.items[(self.index + item) % self.size]
 

@@ -34,8 +34,19 @@ class SizedListTestCase(unittest.TestCase):
 
     def test_getitem(self):
         l: SizedList[int] = SizedList(20)
+        # Test out of range
+        with self.assertRaises(KeyError):
+            _ = l[0]
+        with self.assertRaises(KeyError):
+            _ = l[-1]
+        # Populate the list.
         for i in range(20):
             l.insert(i)
+        # Test out of range
+        with self.assertRaises(KeyError):
+            _ = l[20]
+        with self.assertRaises(KeyError):
+            _ = l[-21]
         # Check initial getitem.
         for i in range(20):
             self.assertEqual(i, l[i])
@@ -43,6 +54,9 @@ class SizedListTestCase(unittest.TestCase):
         for i in range(20):
             l.insert(20 + i)
             self.assertListEqual(list(range(i + 1, 20 + i + 1)), list((l[i] for i in range(20))))
+        # Negative indexing.
+        for i in range(1, 21):
+            self.assertEqual(40 - i, l[-i])
 
 
 if __name__ == '__main__':
