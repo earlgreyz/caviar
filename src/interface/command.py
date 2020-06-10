@@ -36,6 +36,7 @@ def configProvider(file_path: str, cmd: str) -> typing.Dict[str, typing.Any]:
 @click.option('--pchange', default=.5, help='Probability a NS-model car will change a lane')
 # Other oprtions.
 @click.option('--seed', type=int, help='Seed for the RNG')
+@click.option('--buffer', default=10, help='Number of steps in moving average calculation')
 # Configuration file option.
 @click_config_file.configuration_option(provider=configProvider, implicit=False)
 @click.pass_context
@@ -51,6 +52,7 @@ def command(ctx: click.Context, **kwargs) -> None:
     pchange: float = kwargs['pchange']
     obstacles: typing.List[ObstacleValue] = kwargs['obstacles']
     seed: typing.Optional[int] = kwargs['seed']
+    buffer: int = kwargs['buffer']
     # Initialize random number generator.
     if seed is not None:
         random.seed(seed)
@@ -65,7 +67,7 @@ def command(ctx: click.Context, **kwargs) -> None:
     dispatcher = MixedDispatcher(
         count=dispatch, road=road, penetration=penetration, driver=driver, length=car_length)
     # Create a simulator.
-    ctx.obj = Simulator(road=road, dispatcher=dispatcher)
+    ctx.obj = Simulator(road=road, dispatcher=dispatcher, buffer_size=buffer)
 
 
 @command.command()

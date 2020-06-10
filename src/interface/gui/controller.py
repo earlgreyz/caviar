@@ -1,4 +1,5 @@
 import itertools
+import typing
 
 import pygame
 
@@ -113,8 +114,27 @@ class Controller:
         text = font.render(
             'Steps={steps} | Velocity={average_velocity:.2f} | '
             'Conventional Velocity={average_velocity_conventional:.2f} | '
-            'Autonomous Velocity={average_velocity_autonomous:.2f}'.format(**self.statistics),
+            'Autonomous Velocity={average_velocity_autonomous:.2f}'.format(
+                **withOptionalFormat(self.statistics)),
             True, CL_TEXT)
         rect = text.get_rect()
         rect.center = (self.width // 2, self.height + self.STATS_SIZE // 2)
         self.screen.blit(text, rect)
+
+
+T = typing.TypeVar('T')
+
+
+class OptionalFormat(typing.Generic[T]):  # The wrapper is not type-specific
+    def __init__(self, value: typing.Optional[T]):
+        self.value = value
+
+    def __format__(self, *args, **kwargs) -> str:
+        if self.value is None:
+            return '~'
+        else:
+            return self.value.__format__(*args, **kwargs)
+
+
+def withOptionalFormat(statistics: Statistics) -> Statistics:
+    return {k: OptionalFormat(v) for k, v in statistics.items()}

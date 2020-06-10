@@ -3,6 +3,7 @@ import unittest
 from unittest.mock import Mock
 
 from simulator.road.road import Road, CollisionError
+from simulator.statistics import AverageResult
 from simulator.vehicle.vehicle import Vehicle, VehicleFlags
 
 
@@ -417,15 +418,21 @@ class RoadTestCase(unittest.TestCase):
             vehicles.append(vehicle)
         road.getAllVehicles = lambda: vehicles
         # No vehicles matching the predicate.
-        self.assertEqual(road.getAverageVelocityFiltered(lambda _: False), 0, 'invalid velocity')
+        result = road.getAverageVelocityFiltered(lambda _: False)
+        expected = AverageResult(value=0, count=0)
+        self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))
         # All vehicles matching the predicate.
-        self.assertEqual(road.getAverageVelocityFiltered(lambda _: True), 4.5, 'invalid velocity')
+        result = road.getAverageVelocityFiltered(lambda _: True)
+        expected = AverageResult(value=45, count=10)
+        self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))
 
         # Some vehicles matching the predicate.
         def isEven(vehicle):
             return vehicle.velocity % 2 == 0
 
-        self.assertEqual(road.getAverageVelocityFiltered(isEven), 4.0, 'invalid velocity')
+        result = road.getAverageVelocityFiltered(isEven)
+        expected = AverageResult(value=20, count=5)
+        self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))
 
     def test_getAverageVelocity(self):
         road = Road(100, 1)
@@ -435,7 +442,9 @@ class RoadTestCase(unittest.TestCase):
             vehicle.velocity = velocity
             vehicles.append(vehicle)
         road.getAllVehicles = lambda: vehicles
-        self.assertEqual(road.getAverageVelocity(), 4.5, 'invalid velocity')
+        result = road.getAverageVelocity()
+        expected = AverageResult(value=45, count=10)
+        self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))
 
     def test_step(self):
         road = Road(100, 1)
