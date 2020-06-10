@@ -6,17 +6,13 @@ from util.cumulativelist import CumulativeList
 class CumulativeListTestCase(unittest.TestCase):
     def test_append(self):
         l: CumulativeList[int] = CumulativeList(20)
-        l.append(1)
-        self.assertEqual(1, l[0])
-        s = 1
-        for i in range(1, 20):
+        l.append(42)
+        self.assertEqual(42, l[0])
+        s = 42
+        for i in range(1, 100):
             s += i
             l.append(i)
-            self.assertEqual(s, l[i])
-        for i in range(20):
-            s += i
-            l.append(i)
-            self.assertEqual(s, l[i])
+            self.assertEqual(s, l[-1], f'error with i={i}')
 
     def test_value(self):
         l: CumulativeList[int] = CumulativeList(20)

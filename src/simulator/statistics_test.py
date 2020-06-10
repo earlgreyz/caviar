@@ -49,7 +49,7 @@ class AverageResultTestCase(unittest.TestCase):
         self.assertEqual(-10, c.count)
         a = AverageResult(10, 20)
         b = AverageResult(1, 2)
-        c = a + b
+        c = a - b
         self.assertEqual(9, c.value)
         self.assertEqual(18, c.count)
 
@@ -61,10 +61,10 @@ class AverageResultTestCase(unittest.TestCase):
         self.assertEqual(2.5, float(AverageResult(5, 2)))
 
     def test_toMaybeFloat(self):
-        self.assertIsNone(float(AverageResult(42, 0)))
-        self.assertEqual(.5, float(AverageResult(1, 2)))
-        self.assertEqual(.5, float(AverageResult(2, 4)))
-        self.assertEqual(2.5, float(AverageResult(5, 2)))
+        self.assertIsNone(AverageResult(42, 0).toMaybeFloat())
+        self.assertEqual(.5, AverageResult(1, 2).toMaybeFloat())
+        self.assertEqual(.5, AverageResult(2, 4).toMaybeFloat())
+        self.assertEqual(2.5, AverageResult(5, 2).toMaybeFloat())
 
 
 if __name__ == '__main__':
