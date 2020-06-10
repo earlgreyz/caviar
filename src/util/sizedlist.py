@@ -25,7 +25,7 @@ class SizedList(typing.Generic[T]):
     def __getitem__(self, item: int) -> T:
         if item < -len(self) or item >= len(self):
             raise KeyError
-        return self.items[(self.index + item) % self.size]
+        return self.items[(self.index + item) % len(self)]
 
     def insert(self, item: T) -> None:
         if len(self) < self.size:

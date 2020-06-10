@@ -42,6 +42,7 @@ class SizedListTestCase(unittest.TestCase):
         # Populate the list.
         for i in range(20):
             l.insert(i)
+            self.assertEqual(l[-1], i)
         # Test out of range
         with self.assertRaises(KeyError):
             _ = l[20]
@@ -53,6 +54,7 @@ class SizedListTestCase(unittest.TestCase):
         # Check first item gets replaced and start is moved.
         for i in range(20):
             l.insert(20 + i)
+            self.assertEqual(l[-1], 20 + i)
             self.assertListEqual(list(range(i + 1, 20 + i + 1)), list((l[i] for i in range(20))))
         # Negative indexing.
         for i in range(1, 21):
