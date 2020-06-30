@@ -8,6 +8,24 @@ from simulator.vehicle.vehicle import Vehicle
 
 
 class CarTestCase(unittest.TestCase):
+    def test_getMaxSpeedUnlimited(self):
+        road = Mock()
+        road.controller = Mock()
+        road.controller.getMaxSpeed.return_value = 5
+        car = Car(position=(0, 0), velocity=5, road=road)
+        # No vehicles in front.
+        road.getNextVehicle.return_value = (100, None)
+        limit = car._getMaxSpeedUnlimited(position=(0, 0))
+        self.assertEqual(limit, 7)
+        # Vehicle in front is far away.
+        road.getNextVehicle.return_value = (10, Mock())
+        limit = car._getMaxSpeedUnlimited(position=(0, 0))
+        self.assertEqual(limit, 9)
+        # Vehicle in front is blocking the road.
+        road.getNextVehicle.return_value = (2, Mock())
+        limit = car._getMaxSpeedUnlimited(position=(0, 0))
+        self.assertEqual(limit, 1)
+
     def test_getMaxSpeed(self):
         road = Mock()
         road.controller = Mock()
@@ -25,6 +43,14 @@ class CarTestCase(unittest.TestCase):
         road.getNextVehicle.return_value = (2, Mock())
         limit = car._getMaxSpeed(position=(0, 0))
         self.assertEqual(limit, 1)
+
+    def test_isChangeRequired(self):
+        road = Mock()
+        car = Car(position=(0, 0), velocity=1, length=1, road=road)
+        car._getMaxSpeedUnlimited = Mock(return_value=1)
+        self.assertTrue(car._isChangeRequired())
+        car._getMaxSpeedUnlimited = Mock(return_value=5)
+        self.assertFalse(car._isChangeRequired())
 
     def test_isChangePossible(self):
         road = Mock()
@@ -52,20 +78,18 @@ class CarTestCase(unittest.TestCase):
 
     def test_isChangeBeneficial(self):
         road = Mock()
-        car = Car(position=(0, 0), velocity=1, length=3, road=road)
-        max_speed = {}
-        car._getMaxSpeed = Mock(side_effect=lambda position: max_speed.get(position))
+        car = Car(position=(0, 0), velocity=5, length=3, road=road)
         # Same speed.
-        max_speed[(0, 0)] = 5
-        max_speed[(0, 1)] = 5
+        car._getMaxSpeedUnlimited = Mock(return_value=5)
+        car.velocity = 5
         self.assertFalse(car._isChangeBeneficial(destination=(0, 1)))
         # Lower speed.
-        max_speed[(0, 0)] = 5
-        max_speed[(0, 1)] = 4
+        car._getMaxSpeedUnlimited = Mock(return_value=4)
+        car.velocity = 5
         self.assertFalse(car._isChangeBeneficial(destination=(0, 1)))
         # Higher speed.
-        max_speed[(0, 0)] = 4
-        max_speed[(0, 1)] = 5
+        car._getMaxSpeedUnlimited = Mock(return_value=5)
+        car.velocity = 3
         self.assertTrue(car._isChangeBeneficial(destination=(0, 1)))
 
     def test_isChangeSafe(self):
@@ -93,19 +117,19 @@ class CarTestCase(unittest.TestCase):
 
     def test_changeLane(self):
         car = Car(position=(0, 0), velocity=1, length=3, road=Mock())
-        possible = [False, False, False, False, True, True, True]
-        beneficial = [False, False, True, True, False, False, True]
-        safe = [False, True, False, True, False, True, False]
-        for p, b, s in zip(possible, beneficial, safe):
-            car._isChangePossible = Mock(return_value=p)
-            car._isChangeBeneficial = Mock(return_value=b)
-            car._isChangeSafe = Mock(return_value=s)
-            self.assertFalse(car._changeLane(destination=(0, 1)))
-        # Change possible.
-        car._isChangePossible = Mock(return_value=True)
-        car._isChangeBeneficial = Mock(return_value=True)
-        car._isChangeSafe = Mock(return_value=True)
-        self.assertTrue(car._changeLane(destination=(0, 1)))
+        for r in (True, False):
+            car._isChangeRequired = Mock(return_value=r)
+            for p in (True, False):
+                car._isChangePossible = Mock(return_value=p)
+                for b in (True, False):
+                    car._isChangeBeneficial = Mock(return_value=b)
+                    for s in (True, False):
+                        car._isChangeSafe = Mock(return_value=s)
+                        # Only true when all conditions are met.
+                        if r and p and b and s:
+                            self.assertTrue(car._changeLane(destination=(0, 1)))
+                        else:
+                            self.assertFalse(car._changeLane(destination=(0, 1)))
 
     def test_isAutonomous(self):
         car = Car(position=(0, 0), velocity=1, road=Mock())

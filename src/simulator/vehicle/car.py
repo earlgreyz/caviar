@@ -14,19 +14,27 @@ class Car(Vehicle):
         self.road = road
         self.path = []
 
+    def _getMaxSpeedUnlimited(self, position: Position) -> int:
+        '''
+        Returns maximum speed a car can go without causing an accident, does not apply speed limits.
+        :param position: position on the road.
+        :return: maximum speed.
+        '''
+        x, _ = position
+        next, vehicle = self.road.getNextVehicle(position=position)
+        if vehicle is None:
+            return self.road.controller.getMaxSpeed(position=position) + 2
+        return next - x - 1 + self._getMaxSpeedBonus(next=vehicle, position=position)
+
     def _getMaxSpeed(self, position: Position) -> int:
         '''
         Returns maximum speed a car can go without breaking speed limits or causing an accident.
         :param position: position on the road.
         :return: maximum speed.
         '''
-        x, _ = position
         limit = self.road.controller.getMaxSpeed(position=position)
-        next, vehicle = self.road.getNextVehicle(position=position)
-        if vehicle is None:
-            return limit
-        distance = next - x - 1 + self._getMaxSpeedBonus(next=vehicle, position=position)
-        return min(limit, distance)
+        speed = self._getMaxSpeedUnlimited(position=position)
+        return min(limit, speed)
 
     def _getMaxSpeedBonus(self, next: Vehicle, position: Position) -> int:
         '''
@@ -46,15 +54,21 @@ class Car(Vehicle):
         x, lane = destination
         return all(self.road.isSafePosition(position=(x - i, lane)) for i in range(self.length))
 
+    def _isChangeRequired(self) -> bool:
+        '''
+        Checks if the vehicle is not possible to accelerate on the current lane.
+        :return: if it is possible to accelerate.
+        '''
+        return self._getMaxSpeedUnlimited(position=self.position) < self.velocity + 1
+
     def _isChangeBeneficial(self, destination: Position) -> bool:
         '''
         Checks if a vehicle will benefit from the lane change with a faster maximum velocity.
         :param destination: position on the road.
         :return: if it is beneficial to change the lane.
         '''
-        limit = self._getMaxSpeed(self.position)
-        destination_limit = self._getMaxSpeed(position=destination)
-        return destination_limit > limit
+        destination_limit = self._getMaxSpeedUnlimited(position=destination)
+        return destination_limit > self.velocity + 1
 
     def _isChangeSafe(self, destination: Position) -> bool:
         '''
@@ -78,13 +92,15 @@ class Car(Vehicle):
         '''
         return self.road.controller.getMaxSpeed(position=destination)
 
-    def _changeLane(self, destination: Position) -> bool:
+    def _changeLane(self, destination: Position, force: bool = False) -> bool:
         '''
         Returns whether to change the lane to destination.
         :param destination: position on the road.
+        :param force: whether to force a non required change.
         :return: whether to change the lane.
         '''
         return \
+            (force or self._isChangeRequired()) and \
             self._isChangePossible(destination=destination) and \
             self._isChangeBeneficial(destination=destination) and \
             self._isChangeSafe(destination=destination)

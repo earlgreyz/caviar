@@ -32,9 +32,11 @@ def configProvider(file_path: str, cmd: str) -> typing.Dict[str, typing.Any]:
 @click.option('--dispatch', default=6, help='Maximum number of cars dispatched each step')
 @click.option('--penetration', default=.5, help='Penetration rate of CAV')
 @click.option('--car-length', default=1, help='Number of cells occupied by a single car')
+# Driver options.
 @click.option('--pslow', default=.2, help='Probability a NS-model car will slow down')
 @click.option('--pchange', default=.5, help='Probability a NS-model car will change a lane')
-# Other oprtions.
+@click.option('--symmetry', default=False, is_flag=True, help='Do not use left lane to overtake')
+# Other options.
 @click.option('--seed', type=int, help='Seed for the RNG')
 @click.option('--buffer', default=10, help='Number of steps in moving average calculation')
 # Configuration file option.
@@ -50,6 +52,7 @@ def command(ctx: click.Context, **kwargs) -> None:
     car_length: int = kwargs['car_length']
     pslow: float = kwargs['pslow']
     pchange: float = kwargs['pchange']
+    symmetry: bool = kwargs['symmetry']
     obstacles: typing.List[ObstacleValue] = kwargs['obstacles']
     seed: typing.Optional[int] = kwargs['seed']
     buffer: int = kwargs['buffer']
@@ -63,7 +66,7 @@ def command(ctx: click.Context, **kwargs) -> None:
     for obstacle in obstacles:
         addObstacle(road=road, obstacle=obstacle)
     # Create a dispatcher.
-    driver = Driver(slow=pslow, change=pchange)
+    driver = Driver(slow=pslow, change=pchange, symmetry=symmetry)
     dispatcher = MixedDispatcher(
         count=dispatch, road=road, penetration=penetration, driver=driver, length=car_length)
     # Create a simulator.

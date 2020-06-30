@@ -11,10 +11,12 @@ from util.rand import shuffled
 class Driver:
     change: float
     slow: float
+    symmetry: bool
 
-    def __init__(self, change: float = .1, slow: float = .05):
+    def __init__(self, change: float = .1, slow: float = .05, symmetry: bool = True):
         self.change = change
         self.slow = slow
+        self.symmetry = symmetry
 
 
 MaybeDriver = typing.Optional[Driver]
@@ -35,7 +37,9 @@ class ConventionalCar(Car):
         # Try to switch lanes in random order.
         for change in shuffled([-1, 1]):
             destination = (x, lane + change)
-            if self._changeLane(destination):
+            # Force changes for asymmetrical cases when switching from L -> R.
+            force = change == 1 and not self.driver.symmetry
+            if self._changeLane(destination=destination, force=force):
                 self.position = destination
                 break
         return self.position
@@ -50,8 +54,8 @@ class ConventionalCar(Car):
         self.position = x + self.velocity, lane
         return self.position
 
-    def _changeLane(self, destination: Position) -> bool:
-        change_lane = super()._changeLane(destination=destination)
+    def _changeLane(self, destination: Position, force: bool = False) -> bool:
+        change_lane = super()._changeLane(destination=destination, force=force)
         return random.random() < self.driver.change and change_lane
 
 
