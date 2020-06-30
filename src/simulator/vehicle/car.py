@@ -8,11 +8,14 @@ from simulator.vehicle.vehicle import Vehicle
 class Car(Vehicle):
     road: Road
     path: typing.List[typing.Tuple[Position, int]]
+    limit: int
 
-    def __init__(self, position: Position, velocity: int, road: Road, length: int = 1):
+    def __init__(self, position: Position, velocity: int, road: Road,
+                 length: int = 1, limit: int = 0):
         super().__init__(position=position, velocity=velocity, length=length)
         self.road = road
         self.path = []
+        self.limit = limit
 
     def _getMaxSpeedUnlimited(self, position: Position) -> int:
         '''
@@ -32,9 +35,9 @@ class Car(Vehicle):
         :param position: position on the road.
         :return: maximum speed.
         '''
-        limit = self.road.controller.getMaxSpeed(position=position)
+        limit = self.road.controller.getMaxSpeed(position=position) + self.limit
         speed = self._getMaxSpeedUnlimited(position=position)
-        return min(limit, speed)
+        return max(min(limit, speed), 0)
 
     def _getMaxSpeedBonus(self, next: Vehicle, position: Position) -> int:
         '''

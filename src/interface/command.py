@@ -36,6 +36,7 @@ def configProvider(file_path: str, cmd: str) -> typing.Dict[str, typing.Any]:
 @click.option('--pslow', default=.2, help='Probability a NS-model car will slow down')
 @click.option('--pchange', default=.5, help='Probability a NS-model car will change a lane')
 @click.option('--symmetry', default=False, is_flag=True, help='Do not use left lane to overtake')
+@click.option('--limit', default=0, help='Difference in maximum speed between vehicles')
 # Other options.
 @click.option('--seed', type=int, help='Seed for the RNG')
 @click.option('--buffer', default=10, help='Number of steps in moving average calculation')
@@ -53,6 +54,7 @@ def command(ctx: click.Context, **kwargs) -> None:
     pslow: float = kwargs['pslow']
     pchange: float = kwargs['pchange']
     symmetry: bool = kwargs['symmetry']
+    limit: int = kwargs['limit']
     obstacles: typing.List[ObstacleValue] = kwargs['obstacles']
     seed: typing.Optional[int] = kwargs['seed']
     buffer: int = kwargs['buffer']
@@ -68,7 +70,8 @@ def command(ctx: click.Context, **kwargs) -> None:
     # Create a dispatcher.
     driver = Driver(slow=pslow, change=pchange, symmetry=symmetry)
     dispatcher = MixedDispatcher(
-        count=dispatch, road=road, penetration=penetration, driver=driver, length=car_length)
+        count=dispatch, road=road, penetration=penetration,
+        driver=driver, length=car_length, limit=limit)
     # Create a simulator.
     ctx.obj = Simulator(road=road, dispatcher=dispatcher, buffer_size=buffer)
 

@@ -25,9 +25,10 @@ MaybeDriver = typing.Optional[Driver]
 class ConventionalCar(Car):
     driver: Driver
 
-    def __init__(self, position: Position, velocity: int, road: Road, length: int = 1,
-                 driver: MaybeDriver = None):
-        super().__init__(position=position, velocity=velocity, length=length, road=road)
+    def __init__(self, position: Position, velocity: int, road: Road,
+                 length: int = 1, limit: int = 0, driver: MaybeDriver = None):
+        super().__init__(
+            position=position, velocity=velocity, road=road, length=length, limit=limit)
         self.driver = driver if driver is not None else Driver()
 
     def beforeMove(self) -> Position:

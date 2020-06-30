@@ -5,8 +5,10 @@ from simulator.vehicle.vehicle import Vehicle
 
 
 class AutonomousCar(Car):
-    def __init__(self, position: Position, velocity: int, road: Road, length: int = 1):
-        super().__init__(position=position, velocity=velocity, road=road, length=length)
+    def __init__(self, position: Position, velocity: int, road: Road,
+                 length: int = 1, limit: int = 0):
+        super().__init__(
+            position=position, velocity=velocity, road=road, length=length, limit=limit)
 
     def beforeMove(self) -> Position:
         self.path.append((self.position, self.velocity))
