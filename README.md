@@ -9,7 +9,7 @@ for the dependencies.
 
 ### Creating the virtual environment
 ```sh
-$ virtualenv --python=python3.7 venv
+$ virtualenv --python=python3 venv
 $ source venv/bin/activate
 ```
 
