@@ -28,7 +28,7 @@ class Dispatcher:
             if self.remaining <= 0:
                 return
             # Check if position is not occupied.
-            position = (self.length - 1, lane)
+            position = (self.length - 1, lane * self.road.lane_width + self.road.lane_width // 2)
             if self.road.getVehicle(position=position) is not None:
                 continue
             # Add the vehicle.

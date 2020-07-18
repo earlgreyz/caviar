@@ -26,16 +26,17 @@ class DispatcherTestCase(unittest.TestCase):
             dispatcher._newVehicle(position=(0, 0))
 
     @patch('random.randint')
-    def test_dispatch(self, mocked_random):
-        road = Mock()
+    def test_dispatch__count(self, mocked_random):
+        road = Mock(lanes_count=1, lane_width=1)
         road.lanes_count = 1
+        road.sublanesCount = lambda _: 1
 
         # Check no vehicles added if random is zero.
         dispatcher = Dispatcher(road=road, count=1)
         mocked_random.return_value = 0
         dispatcher.dispatch()
         road.addVehicle.assert_not_called()
-        self.assertEqual(dispatcher.remaining, 0, 'expected no remaining vehicles')
+        self.assertEqual(dispatcher.remaining, 0)
 
         # Check no vehicles added if all lanes are taken.
         road.reset_mock()
@@ -43,11 +44,11 @@ class DispatcherTestCase(unittest.TestCase):
         mocked_random.return_value = 1
         dispatcher.dispatch()
         road.addVehicle.assert_not_called()
-        self.assertEqual(dispatcher.remaining, 1, 'expected one remaining vehicle')
+        self.assertEqual(dispatcher.remaining, 1)
 
         # Check remaining vehicles are added.
         road.reset_mock()
-        vehicle = Mock()
+        vehicle = Mock(length=1)
         vehicle.position = (42, 42)
 
         def mock_newVehicle(position: Position) -> Vehicle:
@@ -60,13 +61,41 @@ class DispatcherTestCase(unittest.TestCase):
         dispatcher.dispatch()
         road.getVehicle.assert_called()
         road.addVehicle.assert_called_with(vehicle=vehicle)
-        self.assertEqual(vehicle.position, (0, 0), 'expected vehicle position to be (0, 0)')
-        self.assertEqual(dispatcher.remaining, 0, 'expected no remaining vehicles')
+        self.assertEqual(vehicle.position, (0, 0))
+        self.assertEqual(dispatcher.remaining, 0)
 
     @patch('random.randint')
-    def test_dispatch_long(self, mocked_random):
-        road = Mock()
-        road.lanes_count = 1
+    def test_dispatch__width(self, mocked_random):
+        '''
+        Warning! Potentially flaky test, due to testing a random function.
+        The probability the test will pass despite an error in the function is
+        (2/6)**N where N is the number of times the test is repeated.
+        '''
+        road = Mock(lanes_count=2, lane_width=2)
+        road.sublanesCount = property(lambda _: 6)
+
+        dispatcher = Dispatcher(road=road, count=1)
+        vehicle = Mock(length=1)
+        vehicle.position = (42, 42)
+
+        def mock_newVehicle(position: Position) -> Vehicle:
+            vehicle.position = position
+            return vehicle
+
+        dispatcher._newVehicle = mock_newVehicle
+        road.getVehicle.return_value = None
+
+        # With N=20 the probability of passing an error is lower than 1e-10.
+        for _ in range(20):
+            mocked_random.return_value = 1
+            dispatcher.dispatch()
+            x, lane = vehicle.position
+            self.assertIn(lane, [1, 3], msg='vehicle dispatched between lanes')
+            self.assertEqual(x, 0)
+
+    @patch('random.randint')
+    def test_dispatch__length(self, mocked_random):
+        road = Mock(lanes_count=1, lane_width=1)
         mocked_random.return_value = 1
         dispatcher = Dispatcher(road=road, count=1, length=2)
 
@@ -82,8 +111,25 @@ class DispatcherTestCase(unittest.TestCase):
         dispatcher.dispatch()
         road.getVehicle.assert_called()
         road.addVehicle.assert_called_with(vehicle=vehicle)
-        self.assertEqual(vehicle.position, (1, 0), 'expected vehicle position to be (2, 0)')
-        self.assertEqual(dispatcher.remaining, 0, 'expected no remaining vehicles')
+        self.assertEqual(vehicle.position, (1, 0))
+        self.assertEqual(dispatcher.remaining, 0, )
+
+        road.reset_mock()
+
+        dispatcher = Dispatcher(road=road, count=1, length=4)
+        vehicle = Mock(length=4)
+        vehicle.position = (42, 42)
+
+        def mock_newVehicle(position: Position) -> Vehicle:
+            vehicle.position = position
+            return vehicle
+
+        dispatcher._newVehicle = mock_newVehicle
+        dispatcher.dispatch()
+        road.getVehicle.assert_called()
+        road.addVehicle.assert_called_with(vehicle=vehicle)
+        self.assertEqual(vehicle.position, (3, 0))
+        self.assertEqual(dispatcher.remaining, 0, )
 
 
 if __name__ == '__main__':

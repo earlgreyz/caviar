@@ -22,9 +22,10 @@ class MixedDispatcher(Dispatcher):
 
     def _newVehicle(self, position: Position) -> Vehicle:
         limit = random.randint(-self.limit, self.limit)
-        speed = self.road.controller.getMaxSpeed(position) + limit
+        speed = self.road.controller.getMaxSpeed(position, width=self.road.lane_width) + limit
         params = dict(
-            position=position, velocity=speed, road=self.road, length=self.length, limit=limit)
+            position=position, velocity=speed, road=self.road,
+            length=self.length, width=self.road.lane_width, limit=limit)
         if random.random() < self.penetration:
             return AutonomousCar(**params)
         else:

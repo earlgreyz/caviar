@@ -15,4 +15,5 @@ class ConventionalDispatcher(Dispatcher):
     def _newVehicle(self, position: Position) -> Vehicle:
         speed = self.road.controller.getMaxSpeed(position)
         return ConventionalCar(
-            position, velocity=speed, road=self.road, length=self.length, driver=self.driver)
+            position=position, velocity=speed, road=self.road,
+            length=self.length, width=self.road.lane_width, driver=self.driver)

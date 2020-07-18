@@ -7,4 +7,6 @@ from simulator.vehicle.vehicle import Vehicle
 class AutonomousDispatcher(Dispatcher):
     def _newVehicle(self, position: Position) -> Vehicle:
         speed = self.road.controller.getMaxSpeed(position)
-        return AutonomousCar(position, velocity=speed, road=self.road)
+        return AutonomousCar(
+            position=position, velocity=speed, road=self.road,
+            length=self.length, width=self.road.lane_width)
