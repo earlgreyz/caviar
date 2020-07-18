@@ -6,8 +6,8 @@ from simulator.road.road_test import implementsRoad
 
 @implementsRoad
 class DenseRoadTestCase(unittest.TestCase):
-    def getRoad(self, length: int, lanes: int) -> DenseRoad:
-        return DenseRoad(length=length, lanes_count=lanes)
+    def getRoad(self, length: int, lanes: int, width: int) -> DenseRoad:
+        return DenseRoad(length=length, lanes_count=lanes, lane_width=width)
 
 
 if __name__ == '__main__':

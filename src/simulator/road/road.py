@@ -12,15 +12,25 @@ class Road:
     # Road options.
     length: int
     lanes_count: int
+    lane_width: int
 
     removed: typing.List[Vehicle]
 
-    def __init__(self, length: int, lanes_count: int,
+    def __init__(self, length: int, lanes_count: int, lane_width: int,
                  controller: typing.Optional[SpeedController] = None):
         self.length = length
         self.lanes_count = lanes_count
+        self.lane_width = lane_width
         self.controller = controller if controller is not None else SpeedController()
         self.removed = []
+
+    @property
+    def sublanesCount(self) -> int:
+        '''
+        Returns the actual sub-lanes count.
+        :return: number of sub-lanes.
+        '''
+        return self.lanes_count * self.lane_width + self.lane_width // 2 * 2
 
     def addVehicle(self, vehicle: Vehicle) -> None:
         '''
@@ -86,7 +96,9 @@ class Road:
         :return: if a position is on the road.
         '''
         x, lane = position
-        return inBounds(lane, 0, self.lanes_count) and inBounds(x, 0, self.length)
+        return \
+            inBounds(lane, self.lane_width // 2, self.sublanesCount - self.lane_width // 2) \
+            and inBounds(x, 0, self.length)
 
     def isSafePosition(self, position: Position) -> bool:
         '''

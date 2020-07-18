@@ -15,43 +15,45 @@ class DenseRoad(Road):
     lanes: typing.List[Lane]
     pending_lanes: typing.List[Lane]
 
-    def __init__(self, length: int, lanes_count: int,
+    def __init__(self, length: int, lanes_count: int, lane_width: int,
                  controller: typing.Optional[SpeedController] = None):
-        super().__init__(length=length, lanes_count=lanes_count, controller=controller)
-        # Initialize lanes.
-        self.lanes = [self._emptyLane() for _ in range(self.lanes_count)]
-        self.pending_lanes = [self._emptyLane() for _ in range(self.lanes_count)]
+        super().__init__(length, lanes_count, lane_width, controller=controller)
+        self.lanes = [self._emptyLane() for _ in range(self.sublanesCount)]
+        self.pending_lanes = [self._emptyLane() for _ in range(self.sublanesCount)]
 
     def _emptyLane(self) -> Lane:
         return [None] * self.length
 
     def addVehicle(self, vehicle: Vehicle) -> None:
         x, lane = vehicle.position
-        for i in range(vehicle.length):
-            if self.lanes[lane][x - i] is not None:
-                raise CollisionError()
-        for i in range(vehicle.length):
-            self.lanes[lane][x - i] = vehicle
+        for w in range(vehicle.width):
+            for i in range(vehicle.length):
+                if self.lanes[lane + w][x - i] is not None:
+                    raise CollisionError()
+        for w in range(vehicle.width):
+            for i in range(vehicle.length):
+                self.lanes[lane + w][x - i] = vehicle
 
     def getVehicle(self, position: Position) -> typing.Optional[Vehicle]:
         x, lane = position
         return self.lanes[lane][x]
 
     def getAllVehicles(self) -> typing.Generator[Vehicle, None, None]:
-        for lane in self.lanes:
-            for vehicle in reversed(lane):
-                if vehicle is not None:
+        for lane in range(self.sublanesCount):
+            for x in reversed(range(self.length)):
+                vehicle = self.lanes[lane][x]
+                if vehicle is not None and vehicle.position == (x, lane):
                     yield vehicle
 
     def addPendingVehicle(self, vehicle: Vehicle) -> None:
         x, lane = vehicle.position
-        for i in range(vehicle.length):
-            if self.pending_lanes[lane][x - i] is not None:
-                raise CollisionError()
-
-        for i in range(vehicle.length):
-            self.pending_lanes[lane][x - i] = vehicle
-        self.pending_lanes[lane][x] = vehicle
+        for w in range(vehicle.width):
+            for i in range(vehicle.length):
+                if self.pending_lanes[lane + w][x - i] is not None:
+                    raise CollisionError()
+        for w in range(vehicle.width):
+            for i in range(vehicle.length):
+                self.pending_lanes[lane + w][x - i] = vehicle
 
     def getPendingVehicle(self, position: Position) -> typing.Optional[Vehicle]:
         x, lane = position
@@ -77,4 +79,4 @@ class DenseRoad(Road):
 
     def _commitLanes(self) -> None:
         self.lanes = self.pending_lanes
-        self.pending_lanes = [self._emptyLane() for _ in range(self.lanes_count)]
+        self.pending_lanes = [self._emptyLane() for _ in range(self.sublanesCount)]

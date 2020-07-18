@@ -25,16 +25,19 @@ class SpeedController:
         '''
         self.limits[lane].addi(begin=begin, end=end + 1, data=limit)
 
-    def getMaxSpeed(self, position: Position) -> int:
+    def getMaxSpeed(self, position: Position, width: int) -> int:
         '''
-        Returns maximum speed at the given position.
+        Returns maximum speed at the given position for a vehicle of given width.
         :param position: position on the road.
+        :param width: vehicle width.
         :return: maximum speed.
         '''
         x, lane = position
-        if lane not in self.limits:
-            return self.max_speed
-        limits: typing.Set[Interval] = self.limits[lane].at(x)
-        if len(limits) == 0:
-            return self.max_speed
-        return min((limit.data for limit in limits))
+        speed = self.max_speed
+        for w in range(width):
+            if lane + w in self.limits:
+                limits: typing.Set[Interval] = self.limits[lane].at(x)
+                if len(limits) > 0:
+                    limit = min((limit.data for limit in limits))
+                    speed = min(speed, limit)
+        return speed
