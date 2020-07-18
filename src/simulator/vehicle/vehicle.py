@@ -9,6 +9,10 @@ class VehicleFlags(enum.Flag):
 
 
 class Vehicle:
+    # Constants.
+    WIDTH: int = 2
+
+    # Properties.
     position: Position
     last_position: Position
     velocity: int
