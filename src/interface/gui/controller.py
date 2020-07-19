@@ -36,7 +36,7 @@ class Controller:
         self.simulator = simulator
         pygame.init()
         self.width = self.simulator.road.length * self.SIZE
-        self.height = self.simulator.road.lanes_count * self.SIZE
+        self.height = self.simulator.road.sublanesCount * self.SIZE
         self.screen = pygame.display.set_mode((self.width, self.height + self.STATS_SIZE))
 
     def run(self, speed: float = 100., refresh: int = 60) -> None:
@@ -73,11 +73,12 @@ class Controller:
         bx, by = vehicle.position
         x, y = ax + (bx - ax) * factor, ay + (by - ay) * factor
         length = vehicle.length * self.SIZE
-        rect = (x * self.SIZE + 1, y * self.SIZE + 1, length - 2, self.SIZE - 2)
+        width = vehicle.width * self.SIZE
+        rect = (x * self.SIZE + 1, y * self.SIZE + 1, length - 2, width - 2)
         pygame.draw.rect(self.screen, self._getVehicleColor(vehicle), rect)
 
     def _getVehicleColor(self, vehicle: Vehicle) -> Color:
-        limit = self.simulator.road.controller.getMaxSpeed(vehicle.position)
+        limit = self.simulator.road.controller.getMaxSpeed(vehicle.position, width=vehicle.width)
         if isinstance(vehicle, AutonomousCar):
             start, end = Colors.PURPLE, Colors.BLUE
         elif isinstance(vehicle, Car):
