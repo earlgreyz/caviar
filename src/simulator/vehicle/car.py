@@ -11,8 +11,8 @@ class Car(Vehicle):
     limit: int
 
     def __init__(self, position: Position, velocity: int, road: Road,
-                 length: int = 1, limit: int = 0):
-        super().__init__(position=position, velocity=velocity, length=length)
+                 length: int = 1, width: int = 1, limit: int = 0):
+        super().__init__(position=position, velocity=velocity, length=length, width=width)
         self.road = road
         self.path = []
         self.limit = limit
@@ -23,11 +23,14 @@ class Car(Vehicle):
         :param position: position on the road.
         :return: maximum speed.
         '''
-        x, _ = position
-        next, vehicle = self.road.getNextVehicle(position=position)
-        if vehicle is None:
-            return self.road.controller.getMaxSpeed(position=position) + 2
-        return next - x - 1 + self._getMaxSpeedBonus(next=vehicle, position=position)
+        x, lane = position
+        speed = self.road.length
+        for w in range(self.width):
+            next, vehicle = self.road.getNextVehicle(position=(x, lane + w))
+            if vehicle is not None:
+                max_speed = next - x - 1 + self._getMaxSpeedBonus(next=vehicle, position=position)
+                speed = min(speed, max_speed)
+        return speed
 
     def _getMaxSpeed(self, position: Position) -> int:
         '''
@@ -35,7 +38,7 @@ class Car(Vehicle):
         :param position: position on the road.
         :return: maximum speed.
         '''
-        limit = self.road.controller.getMaxSpeed(position=position) + self.limit
+        limit = self.road.controller.getMaxSpeed(position=position, width=self.width) + self.limit
         speed = self._getMaxSpeedUnlimited(position=position)
         return max(min(limit, speed), 0)
 
@@ -55,7 +58,8 @@ class Car(Vehicle):
         :return: if it is possible to change the lane.
         '''
         x, lane = destination
-        return all(self.road.isSafePosition(position=(x - i, lane)) for i in range(self.length))
+        return all(self.road.isSafePosition(position=(x - i, lane + w))
+                   for i in range(self.length) for w in range(self.width))
 
     def _isChangeRequired(self) -> bool:
         '''
@@ -93,7 +97,7 @@ class Car(Vehicle):
         :param destination: position on the road.
         :return: safe distance.
         '''
-        return self.road.controller.getMaxSpeed(position=destination)
+        return self.road.controller.getMaxSpeed(position=destination, width=self.width)
 
     def _changeLane(self, destination: Position, force: bool = False) -> bool:
         '''

@@ -26,9 +26,11 @@ class ConventionalCar(Car):
     driver: Driver
 
     def __init__(self, position: Position, velocity: int, road: Road,
-                 length: int = 1, limit: int = 0, driver: MaybeDriver = None):
+                 length: int = 1, width: int = 1,
+                 limit: int = 0, driver: MaybeDriver = None):
         super().__init__(
-            position=position, velocity=velocity, road=road, length=length, limit=limit)
+            position=position, velocity=velocity, road=road,
+            length=length, width=width, limit=limit)
         self.driver = driver if driver is not None else Driver()
 
     def beforeMove(self) -> Position:
@@ -36,7 +38,7 @@ class ConventionalCar(Car):
         self.last_position = self.position
         x, lane = self.position
         # Try to switch lanes in random order.
-        for change in shuffled([-1, 1]):
+        for change in shuffled([-self.road.lane_width, self.road.lane_width]):
             destination = (x, lane + change)
             # Force changes for asymmetrical cases when switching from L -> R.
             force = change == 1 and not self.driver.symmetry

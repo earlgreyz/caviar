@@ -9,14 +9,14 @@ from simulator.vehicle.vehicle import Vehicle
 
 class CarTestCase(unittest.TestCase):
     def test_getMaxSpeedUnlimited(self):
-        road = Mock()
+        road = Mock(length=100)
         road.controller = Mock()
         road.controller.getMaxSpeed.return_value = 5
         car = Car(position=(0, 0), velocity=5, road=road)
         # No vehicles in front.
         road.getNextVehicle.return_value = (100, None)
         limit = car._getMaxSpeedUnlimited(position=(0, 0))
-        self.assertEqual(limit, 7)
+        self.assertEqual(limit, 100)
         # Vehicle in front is far away.
         road.getNextVehicle.return_value = (10, Mock())
         limit = car._getMaxSpeedUnlimited(position=(0, 0))
@@ -27,7 +27,7 @@ class CarTestCase(unittest.TestCase):
         self.assertEqual(limit, 1)
 
     def test_getMaxSpeed(self):
-        road = Mock()
+        road = Mock(length=100)
         road.controller = Mock()
         road.controller.getMaxSpeed.return_value = 5
         car = Car(position=(0, 0), velocity=5, road=road)

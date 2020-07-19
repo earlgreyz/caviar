@@ -6,9 +6,10 @@ from simulator.vehicle.vehicle import Vehicle
 
 class AutonomousCar(Car):
     def __init__(self, position: Position, velocity: int, road: Road,
-                 length: int = 1, limit: int = 0):
+                 length: int = 1, width: int = 1, limit: int = 0):
         super().__init__(
-            position=position, velocity=velocity, road=road, length=length, limit=limit)
+            position=position, velocity=velocity, road=road,
+            length=length, width=width, limit=limit)
 
     def beforeMove(self) -> Position:
         self.path.append((self.position, self.velocity))
@@ -17,7 +18,7 @@ class AutonomousCar(Car):
         # Find the best lane change.
         best_change = 0
         best_limit = self._getMaxSpeed(position=self.position)
-        for change in [-1, 1]:
+        for change in [-self.road.lane_width, self.road.lane_width]:
             destination = (x, lane + change)
             if self._changeLane(destination):
                 limit = self._getMaxSpeed(position=destination)
