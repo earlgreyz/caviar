@@ -701,6 +701,34 @@ class RoadTestCase(unittest.TestCase):
             road.isSafePosition = Mock(side_effect=mock_isSafePosition(invalid=invalid))
             self.assertFalse(road.canPlaceVehicle(vehicle=vehicle), msg=f'invalid={invalid}')
 
+    def test_addEmergencyVehicle(self):
+        road: Road = Road(length=100, lanes_count=1, lane_width=1)
+        vehicle = Mock(position=(0, 0), flags=VehicleFlags.NONE)
+        with self.assertRaises(ValueError):
+            road.addEmergencyVehicle(vehicle)
+        vehicle.flags = VehicleFlags.EMERGENCY
+        road.addVehicle = Mock()
+        road.addEmergencyVehicle(vehicle)
+        road.addVehicle.assert_called_once_with(vehicle=vehicle)
+        self.assertCountEqual({vehicle}, road.emergency)
+
+    def test_removeVehicle(self):
+        road: Road = Road(length=100, lanes_count=1, lane_width=1)
+        vehicle = Mock(position=(0, 0), flags=VehicleFlags.NONE)
+        emergency = Mock(position=(1, 0), flags=VehicleFlags.EMERGENCY)
+        road.emergency = {emergency}
+        # Remove non-emergency vehicle.
+        road._removeVehicle(vehicle)
+        self.assertCountEqual({emergency}, road.emergency)
+        self.assertCountEqual([vehicle], road.removed)
+        # Remove emergency vehicle.
+        road._removeVehicle(emergency)
+        self.assertCountEqual({}, road.emergency)
+        self.assertCountEqual([vehicle, emergency], road.removed)
+        # Remove emergency vehicle not on the road.
+        with self.assertRaises(KeyError):
+            road._removeVehicle(emergency)
+
     def test_step(self):
         road = Road(100, 1, lane_width=1)
         vehicle = Mock()

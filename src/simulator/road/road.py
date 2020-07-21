@@ -15,6 +15,7 @@ class Road:
     lane_width: int
 
     removed: typing.List[Vehicle]
+    emergency: typing.Set[Vehicle]
 
     def __init__(self, length: int, lanes_count: int, lane_width: int,
                  controller: typing.Optional[SpeedController] = None):
@@ -22,7 +23,8 @@ class Road:
         self.lanes_count = lanes_count
         self.lane_width = lane_width
         self.controller = controller if controller is not None else SpeedController()
-        self.removed = []
+        self.removed = list()
+        self.emergency = set()
 
     @property
     def sublanesCount(self) -> int:
@@ -60,6 +62,17 @@ class Road:
         :return: None.
         '''
         raise NotImplementedError()
+
+    def addEmergencyVehicle(self, vehicle: Vehicle) -> None:
+        '''
+        Adds a new emergency vehicle to the  road.
+        :param vehicle: vehicle to add.
+        :return: None.
+        '''
+        if not vehicle.flags & VehicleFlags.EMERGENCY:
+            raise ValueError('emergency vehicle expected')
+        self.emergency.add(vehicle)
+        self.addVehicle(vehicle=vehicle)
 
     def getVehicle(self, position: Position) -> typing.Optional[Vehicle]:
         '''
@@ -177,8 +190,18 @@ class Road:
             if x < self.length:
                 self.addPendingVehicle(vehicle=vehicle)
             else:
-                self.removed.append(vehicle)
+                self._removeVehicle(vehicle)
         self._commitLanes()
+
+    def _removeVehicle(self, vehicle: Vehicle) -> None:
+        '''
+        Removes vehicle from the road.
+        :param vehicle: vehicle to remove.
+        :return: None.
+        '''
+        self.removed.append(vehicle)
+        if vehicle.flags & VehicleFlags.EMERGENCY:
+            self.emergency.remove(vehicle)
 
     def step(self) -> None:
         '''

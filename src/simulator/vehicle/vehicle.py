@@ -7,6 +7,7 @@ from util.enum import withLimits
 @withLimits
 class VehicleFlags(enum.Flag):
     MOVED = enum.auto()
+    EMERGENCY = enum.auto()
 
 
 class Vehicle:
