@@ -30,6 +30,7 @@ def configProvider(file_path: str, cmd: str) -> typing.Dict[str, typing.Any]:
 @click.option('--max-speed', default=5, help='Road maximum speed')
 @click.option('--obstacles', multiple=True, default=[], type=ObstacleParamType())
 # Dispatcher options.
+@click.option('--density', default=.1, help='Initial density of vehicles on the road')
 @click.option('--dispatch', default=6, help='Maximum number of cars dispatched each step')
 @click.option('--penetration', default=.5, help='Penetration rate of CAV')
 @click.option('--car-length', default=1, help='Number of cells occupied by a single car')
@@ -50,6 +51,7 @@ def command(ctx: click.Context, **kwargs) -> None:
     width: int = kwargs['width']
     lanes: int = kwargs['lanes']
     max_speed: int = kwargs['max_speed']
+    density: float = kwargs['density']
     dispatch: int = kwargs['dispatch']
     penetration: float = kwargs['penetration']
     car_length: int = kwargs['car_length']
@@ -70,13 +72,15 @@ def command(ctx: click.Context, **kwargs) -> None:
     # Add obstacles.
     for obstacle in obstacles:
         addObstacle(road=road, obstacle=obstacle)
-    # Create a dispatcher.
+    # Create the dispatcher.
     driver = Driver(slow=pslow, change=pchange, symmetry=symmetry)
     dispatcher = MixedDispatcher(
         count=dispatch, road=road, penetration=penetration,
         driver=driver, length=car_length, limit=limit)
-    # Create a simulator.
-    ctx.obj = Simulator(road=road, dispatcher=dispatcher, buffer_size=buffer)
+    # Create the simulator and scatter vehicles.
+    simulator = Simulator(road=road, dispatcher=dispatcher, buffer_size=buffer)
+    simulator.scatterVehicles(density=density)
+    ctx.obj = simulator
 
 
 @command.command()

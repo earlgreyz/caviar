@@ -28,11 +28,12 @@ class Dispatcher:
             if self.remaining <= 0:
                 return
             # Check if position is not occupied.
-            position = (self.length - 1, lane * self.road.lane_width + self.road.lane_width // 2)
-            if self.road.getVehicle(position=position) is not None:
+            position = self.road.getRelativePosition(position=(self.length - 1, lane))
+            vehicle = self._newVehicle(position=position)
+            if not self.road.canPlaceVehicle(vehicle=vehicle):
                 continue
             # Add the vehicle.
-            self.road.addVehicle(vehicle=self._newVehicle(position=position))
+            self.road.addVehicle(vehicle=vehicle)
             self.remaining -= 1
 
     def _newVehicle(self, position: Position) -> Vehicle:

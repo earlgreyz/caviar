@@ -1,7 +1,9 @@
 import typing
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, call
+from itertools import chain, combinations
 
+from simulator.position import Position
 from simulator.road.road import Road, CollisionError
 from simulator.statistics import AverageResult
 from simulator.vehicle.vehicle import Vehicle, VehicleFlags
@@ -597,6 +599,24 @@ class RoadTestCase(unittest.TestCase):
         road = Road(100, 2, lane_width=4)
         self.assertEqual(road.sublanesCount, 12)
 
+    def test_getRelativePosition(self):
+        road = Road(100, 2, lane_width=1)
+        for x in range(100):
+            for lane in range(2):
+                position = (x, lane)
+                result = road.getRelativePosition(position=position)
+                self.assertEqual(result, position, f'invalid position for ({x}, {lane})')
+        road = Road(100, 2, lane_width=2)
+        self.assertEqual(road.getRelativePosition((0, 0)), (0, 1))
+        self.assertEqual(road.getRelativePosition((42, 0)), (42, 1))
+        self.assertEqual(road.getRelativePosition((0, 1)), (0, 3))
+        self.assertEqual(road.getRelativePosition((42, 1)), (42, 3))
+        road = Road(100, 2, lane_width=10)
+        self.assertEqual(road.getRelativePosition((0, 0)), (0, 5))
+        self.assertEqual(road.getRelativePosition((42, 0)), (42, 5))
+        self.assertEqual(road.getRelativePosition((0, 1)), (0, 15))
+        self.assertEqual(road.getRelativePosition((42, 1)), (42, 15))
+
     def test_isProperPosition(self):
         road = Road(100, 1, lane_width=1)
         self.assertTrue(road.isProperPosition(position=(0, 0)))
@@ -629,6 +649,30 @@ class RoadTestCase(unittest.TestCase):
         road.getPendingVehicle = Mock(return_value=None)
         self.assertTrue(road.isSafePosition(position=(0, 0)))
 
+    def test_canPlaceVehicle(self):
+        road = Road(length=100, lanes_count=2, lane_width=2)
+        vehicle = Mock(width=2, length=3, position=(2, 1))
+
+        positions = [(0, 1), (1, 1), (2, 1), (0, 2), (1, 2), (2, 2)]
+        calls = [call(position=position) for position in positions]
+
+        def mock_isSafePosition(invalid: typing.Iterable[Position]) \
+                -> typing.Callable[[Position], bool]:
+            return lambda position: position not in invalid
+
+        road.isSafePosition = Mock(side_effect=mock_isSafePosition([]))
+        self.assertTrue(road.canPlaceVehicle(vehicle=vehicle))
+        road.isSafePosition.assert_has_calls(calls, any_order=True)
+
+        def powerset(xs):
+            return chain.from_iterable(combinations(xs, r) for r in range(len(xs) + 1))
+
+        for invalid in powerset(positions):
+            if len(invalid) == 0:
+                continue
+            road.isSafePosition = Mock(side_effect=mock_isSafePosition(invalid=invalid))
+            self.assertFalse(road.canPlaceVehicle(vehicle=vehicle), msg=f'invalid={invalid}')
+
     def test_getAverageVelocityFiltered(self):
         road = Road(100, 1, lane_width=1)
         vehicles: typing.List[Vehicle] = []
@@ -654,26 +698,25 @@ class RoadTestCase(unittest.TestCase):
         expected = AverageResult(value=20, count=5)
         self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))
 
-    def test_getAverageVelocity(self):
-        road = Road(100, 1, lane_width=1)
-        vehicles: typing.List[Vehicle] = []
-        for velocity in range(10):
+        def test_getAverageVelocity(self):
+            road = Road(100, 1, lane_width=1)
+            vehicles: typing.List[Vehicle] = []
+            for velocity in range(10):
+                vehicle = Mock()
+                vehicle.velocity = velocity
+                vehicles.append(vehicle)
+            road.getAllVehicles = lambda: vehicles
+            result = road.getAverageVelocity()
+            expected = AverageResult(value=45, count=10)
+            self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))
+
+        def test_step(self):
+            road = Road(100, 1, lane_width=1)
             vehicle = Mock()
-            vehicle.velocity = velocity
-            vehicles.append(vehicle)
-        road.getAllVehicles = lambda: vehicles
-        result = road.getAverageVelocity()
-        expected = AverageResult(value=45, count=10)
-        self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))
+            road._updateLanes = lambda f: f(vehicle)
+            road.step()
+            vehicle.beforeMove.assert_called_once()
+            vehicle.move.assert_called_once()
 
-    def test_step(self):
-        road = Road(100, 1, lane_width=1)
-        vehicle = Mock()
-        road._updateLanes = lambda f: f(vehicle)
-        road.step()
-        vehicle.beforeMove.assert_called_once()
-        vehicle.move.assert_called_once()
-
-
-if __name__ == '__main__':
-    unittest.main()
+    if __name__ == '__main__':
+        unittest.main()

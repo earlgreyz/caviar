@@ -30,24 +30,30 @@ class DispatcherTestCase(unittest.TestCase):
         road = Mock(lanes_count=1, lane_width=1)
         road.lanes_count = 1
         road.sublanesCount = lambda _: 1
+        road.canPlaceVehicle = Mock(return_value=False)
+        road.getRelativePosition = lambda position: position
 
         # Check no vehicles added if random is zero.
         dispatcher = Dispatcher(road=road, count=1)
+        vehicle = Mock()
+        dispatcher._newVehicle = Mock(return_value=vehicle)
         mocked_random.return_value = 0
         dispatcher.dispatch()
+        road.canPlaceVehicle.assert_not_called()
         road.addVehicle.assert_not_called()
         self.assertEqual(dispatcher.remaining, 0)
 
         # Check no vehicles added if all lanes are taken.
         road.reset_mock()
-        road.getVehicle.return_value = Mock()
         mocked_random.return_value = 1
         dispatcher.dispatch()
+        road.canPlaceVehicle.assert_called()
         road.addVehicle.assert_not_called()
         self.assertEqual(dispatcher.remaining, 1)
 
         # Check remaining vehicles are added.
         road.reset_mock()
+        road.canPlaceVehicle.return_value = True
         vehicle = Mock(length=1)
         vehicle.position = (42, 42)
 
@@ -56,10 +62,9 @@ class DispatcherTestCase(unittest.TestCase):
             return vehicle
 
         dispatcher._newVehicle = mock_newVehicle
-        road.getVehicle.return_value = None
         mocked_random.return_value = 0
         dispatcher.dispatch()
-        road.getVehicle.assert_called()
+        road.canPlaceVehicle.assert_called_with(vehicle=vehicle)
         road.addVehicle.assert_called_with(vehicle=vehicle)
         self.assertEqual(vehicle.position, (0, 0))
         self.assertEqual(dispatcher.remaining, 0)
@@ -73,6 +78,13 @@ class DispatcherTestCase(unittest.TestCase):
         '''
         road = Mock(lanes_count=2, lane_width=2)
         road.sublanesCount = property(lambda _: 6)
+        road.canPlaceVehicle = Mock(return_value=True)
+
+        def mock_getRelativePosition(position: Position) -> Position:
+            x, lane = position
+            return x, lane * 2 + 1
+
+        road.getRelativePosition = mock_getRelativePosition
 
         dispatcher = Dispatcher(road=road, count=1)
         vehicle = Mock(length=1)
@@ -83,11 +95,10 @@ class DispatcherTestCase(unittest.TestCase):
             return vehicle
 
         dispatcher._newVehicle = mock_newVehicle
-        road.getVehicle.return_value = None
+        mocked_random.return_value = 1
 
         # With N=20 the probability of passing an error is lower than 1e-10.
         for _ in range(20):
-            mocked_random.return_value = 1
             dispatcher.dispatch()
             x, lane = vehicle.position
             self.assertIn(lane, [1, 3], msg='vehicle dispatched between lanes')
@@ -96,6 +107,8 @@ class DispatcherTestCase(unittest.TestCase):
     @patch('random.randint')
     def test_dispatch__length(self, mocked_random):
         road = Mock(lanes_count=1, lane_width=1)
+        road.canPlaceVehicle = Mock(return_value=True)
+        road.getRelativePosition = lambda position: position
         mocked_random.return_value = 1
         dispatcher = Dispatcher(road=road, count=1, length=2)
 
@@ -107,9 +120,8 @@ class DispatcherTestCase(unittest.TestCase):
             return vehicle
 
         dispatcher._newVehicle = mock_newVehicle
-        road.getVehicle.return_value = None
         dispatcher.dispatch()
-        road.getVehicle.assert_called()
+        road.canPlaceVehicle.assert_called_with(vehicle=vehicle)
         road.addVehicle.assert_called_with(vehicle=vehicle)
         self.assertEqual(vehicle.position, (1, 0))
         self.assertEqual(dispatcher.remaining, 0, )
@@ -126,7 +138,7 @@ class DispatcherTestCase(unittest.TestCase):
 
         dispatcher._newVehicle = mock_newVehicle
         dispatcher.dispatch()
-        road.getVehicle.assert_called()
+        road.canPlaceVehicle.assert_called_with(vehicle=vehicle)
         road.addVehicle.assert_called_with(vehicle=vehicle)
         self.assertEqual(vehicle.position, (3, 0))
         self.assertEqual(dispatcher.remaining, 0, )

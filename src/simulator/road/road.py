@@ -32,6 +32,16 @@ class Road:
         '''
         return self.lanes_count * self.lane_width + self.lane_width // 2 * 2
 
+    def getRelativePosition(self, position: Position) -> Position:
+        '''
+        Translates absolute position (not considering the lanes division) to the relative position
+        on the road.
+        :param position: absolute position.
+        :return: relative position.
+        '''
+        x, lane = position
+        return x, lane * self.lane_width + self.lane_width // 2
+
     def addVehicle(self, vehicle: Vehicle) -> None:
         '''
         Adds a new vehicle to the road.
@@ -103,13 +113,24 @@ class Road:
     def isSafePosition(self, position: Position) -> bool:
         '''
         Checks if a position is safe to place a vehicle in.
-        :param position: position on the  road.
+        :param position: position on the road.
         :return: if a position is safe.
         '''
         return \
             self.isProperPosition(position=position) and \
             self.getVehicle(position=position) is None and \
             self.getPendingVehicle(position=position) is None
+
+    def canPlaceVehicle(self, vehicle: Vehicle) -> bool:
+        '''
+        Checks if a given vehicle can be placed on the road.
+        :param vehicle: vehicle to check.
+        :return: if a vehicle can be placed.
+        '''
+        x, lane = vehicle.position
+        return \
+            all(self.isSafePosition(position=(x - i, lane + j))
+                for i in range(vehicle.length) for j in range(vehicle.width))
 
     def _commitLanes(self) -> None:
         '''

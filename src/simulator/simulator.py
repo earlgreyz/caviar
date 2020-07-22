@@ -1,4 +1,5 @@
 import typing
+import random
 
 from simulator.dispatcher.dispatcher import Dispatcher
 from simulator.road.road import Road
@@ -33,6 +34,19 @@ class Simulator:
         self.velocity_conventional = \
             [CumulativeList(buffer_size) for _ in range(road.lanes_count + 1)]
         self.throughput = CumulativeList(buffer_size)
+
+    def scatterVehicles(self, density: float) -> None:
+        '''
+        Randomly scatters vehicles on the road with a desired density.
+        :param density: probability a vehicle will be placed at every position.
+        :return: None.
+        '''
+        for lane in range(self.road.lanes_count):
+            for x in range(self.road.length):
+                position = self.road.getRelativePosition(position=(x, lane))
+                vehicle = self.dispatcher._newVehicle(position=position)
+                if self.road.canPlaceVehicle(vehicle=vehicle) and random.random() < density:
+                    self.road.addVehicle(vehicle=vehicle)
 
     def step(self) -> Statistics:
         '''
