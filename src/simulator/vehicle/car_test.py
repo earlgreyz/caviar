@@ -4,6 +4,7 @@ from unittest.mock import Mock
 
 from simulator.position import Position
 from simulator.vehicle.car import Car, isCar
+from simulator.vehicle.obstacle import Obstacle
 from simulator.vehicle.vehicle import Vehicle
 
 
@@ -115,7 +116,7 @@ class CarTestCase(unittest.TestCase):
         road.getPreviousVehicle.return_value = x - max_speed - length, Mock()
         self.assertTrue(car._isChangeSafe(destination=(x, 1)))
 
-    def test_changeLane(self):
+    def test_canChangeLane(self):
         car = Car(position=(0, 0), velocity=1, length=3, road=Mock())
         for r in (True, False):
             car._isChangeRequired = Mock(return_value=r)
@@ -127,9 +128,107 @@ class CarTestCase(unittest.TestCase):
                         car._isChangeSafe = Mock(return_value=s)
                         # Only true when all conditions are met.
                         if r and p and b and s:
-                            self.assertTrue(car._changeLane(destination=(0, 1)))
+                            self.assertTrue(car._canChangeLane(destination=(0, 1)))
                         else:
-                            self.assertFalse(car._changeLane(destination=(0, 1)))
+                            self.assertFalse(car._canChangeLane(destination=(0, 1)))
+
+    def test_canAvoidObstacle(self):
+        # No space on a nearby lane.
+        car = Car(position=(0, 0), velocity=1, road=Mock())
+        car._isChangePossible = Mock(return_value=False)
+        self.assertFalse(car._canAvoidObstacle(obstacle=Mock(), destination=(0, 1)))
+        # No nearby vehicles on the destination lane.
+        car = Car(position=(0, 0), velocity=1, road=Mock())
+        car._isChangePossible = Mock(return_value=True)
+        car._isChangeSafe = Mock(return_value=True)
+        self.assertTrue(car._canAvoidObstacle(obstacle=Mock(), destination=(0, 1)))
+        # Vehicle on the destination lane is a car willing to zip.
+        road = Mock()
+        other = Car(position=(0, 1), velocity=1, road=road)
+        road.getPreviousVehicle.return_value = 0, other
+        car = Car(position=(1, 0), velocity=1, road=road)
+        car._isChangePossible = Mock(return_value=True)
+        car._isChangeSafe = Mock(return_value=False)
+        obstacle = Mock()
+        self.assertNotIn(obstacle, other.zipped)
+        self.assertTrue(car._canAvoidObstacle(obstacle=obstacle, destination=(1, 1)))
+        # Vehicle on the destination lane is a static obstacle.
+        road = Mock()
+        other = Obstacle(position=(0, 1), length=1, width=1)
+        road.getPreviousVehicle.return_value = 0, other
+        car = Car(position=(1, 0), velocity=1, road=road)
+        car._isChangePossible = Mock(return_value=True)
+        car._isChangeSafe = Mock(return_value=False)
+        self.assertTrue(car._canAvoidObstacle(obstacle=obstacle, destination=(1, 1)))
+        # Vehicle on the destination lane is a car not willing to zip.
+        road = Mock()
+        other = Car(position=(0, 1), velocity=1, road=road)
+        road.getPreviousVehicle.return_value = 0, other
+        car = Car(position=(1, 0), velocity=1, road=road)
+        car._isChangePossible = Mock(return_value=True)
+        car._isChangeSafe = Mock(return_value=False)
+        obstacle = Mock()
+        other.zipped = {obstacle}
+        self.assertFalse(car._canAvoidObstacle(obstacle=obstacle, destination=(1, 1)))
+
+    def test_avoidObstacle(self):
+        # No flags set for vehicles far away.
+        road = Mock()
+        other = Car(position=(0, 1), velocity=1, road=road)
+        road.getPreviousVehicle.return_value = 0, other
+        car = Car(position=(1, 0), velocity=1, road=road)
+        car._isChangeSafe = Mock(return_value=True)
+        obstacle = Mock()
+        car._avoidObstacle(obstacle=obstacle, destination=(1, 1))
+        self.assertNotIn(obstacle, other.zipped)
+        # Obstacle added to zipped list when vehicle is close.
+        road = Mock()
+        other = Car(position=(0, 1), velocity=1, road=road)
+        road.getPreviousVehicle.return_value = 0, other
+        car = Car(position=(1, 0), velocity=1, road=road)
+        car._isChangeSafe = Mock(return_value=False)
+        obstacle = Mock()
+        car._avoidObstacle(obstacle=obstacle, destination=(1, 1))
+        self.assertIn(obstacle, other.zipped)
+
+    def test_beforeMove(self):
+        def mock_tryChange(car: Car, result: bool, destination: Position) \
+                -> typing.Callable[[Car], bool]:
+            def f() -> bool:
+                if result:
+                    car.position = destination
+                return result
+
+            return f
+
+        # Obstacles avoided.
+        road = Mock()
+        car = Car(position=(42, 1), velocity=5, road=road)
+        car._tryAvoidObstacle = \
+            Mock(side_effect=mock_tryChange(car=car, result=True, destination=(42, 0)))
+        car._tryChangeLanes = \
+            Mock(side_effect=mock_tryChange(car=car, result=True, destination=(42, 2)))
+        position = car.beforeMove()
+        car._tryAvoidObstacle.assert_called_once()
+        car._tryChangeLanes.assert_not_called()
+        self.assertEqual(position, (42, 0))
+        self.assertEqual(car.position, (42, 0))
+        self.assertEqual(car.last_position, (42, 1))
+        self.assertIn(((42, 1), 5), car.path)
+        # No obstacles avoided.
+        road = Mock()
+        car = Car(position=(42, 1), velocity=5, road=road)
+        car._tryAvoidObstacle = \
+            Mock(side_effect=mock_tryChange(car=car, result=False, destination=(42, 1)))
+        car._tryChangeLanes = \
+            Mock(side_effect=mock_tryChange(car=car, result=True, destination=(42, 2)))
+        position = car.beforeMove()
+        car._tryAvoidObstacle.assert_called_once()
+        car._tryChangeLanes.assert_called_once()
+        self.assertEqual(position, (42, 2))
+        self.assertEqual(car.position, (42, 2))
+        self.assertEqual(car.last_position, (42, 1))
+        self.assertIn(((42, 1), 5), car.path)
 
     def test_isAutonomous(self):
         car = Car(position=(0, 0), velocity=1, road=Mock())

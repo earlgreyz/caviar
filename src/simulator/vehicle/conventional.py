@@ -4,6 +4,7 @@ import typing
 from simulator.position import Position
 from simulator.road.road import Road
 from simulator.vehicle.car import Car
+from simulator.vehicle.obstacle import Obstacle
 from simulator.vehicle.vehicle import Vehicle
 from util.rand import shuffled
 
@@ -33,20 +34,6 @@ class ConventionalCar(Car):
             length=length, width=width, limit=limit)
         self.driver = driver if driver is not None else Driver()
 
-    def beforeMove(self) -> Position:
-        self.path.append((self.position, self.velocity))
-        self.last_position = self.position
-        x, lane = self.position
-        # Try to switch lanes in random order.
-        for change in shuffled([-self.road.lane_width, self.road.lane_width]):
-            destination = (x, lane + change)
-            # Force changes for asymmetrical cases when switching from L -> R.
-            force = change == 1 and not self.driver.symmetry
-            if self._changeLane(destination=destination, force=force):
-                self.position = destination
-                break
-        return self.position
-
     def move(self) -> Position:
         x, lane = self.position
         if self.velocity > 0 and random.random() < self.driver.slow:
@@ -57,8 +44,44 @@ class ConventionalCar(Car):
         self.position = x + self.velocity, lane
         return self.position
 
-    def _changeLane(self, destination: Position, force: bool = False) -> bool:
-        change_lane = super()._changeLane(destination=destination, force=force)
+    def _tryAvoidObstacle(self) -> bool:
+        '''
+        Try changing the lane to avoid an obstacle.
+        :return: if lane was changed.
+        '''
+        x, lane = self.position
+        vx, vehicle = self.road.getNextVehicle(position=self.position)
+        if vehicle is None or not isinstance(vehicle, Obstacle):
+            return False
+        if vx - x > max(self.velocity, 1):
+            return False
+        # Try to switch lanes in random order.
+        for change in shuffled([-self.road.lane_width, self.road.lane_width]):
+            destination = (x, lane + change)
+            if self._canAvoidObstacle(obstacle=vehicle, destination=destination):
+                self._avoidObstacle(obstacle=vehicle, destination=destination)
+                self.position = destination
+                return True
+        return False
+
+    def _tryChangeLanes(self) -> bool:
+        '''
+        Try changing the lane to improve speed.
+        :return: if lane was changed.
+        '''
+        # Try to switch lanes in random order.
+        x, lane = self.position
+        for change in shuffled([-self.road.lane_width, self.road.lane_width]):
+            destination = (x, lane + change)
+            # Force changes for asymmetrical cases when switching from L -> R.
+            force = change == 1 and not self.driver.symmetry
+            if self._canChangeLane(destination=destination, force=force):
+                self.position = destination
+                return True
+        return False
+
+    def _canChangeLane(self, destination: Position, force: bool = False) -> bool:
+        change_lane = super()._canChangeLane(destination=destination, force=force)
         return random.random() < self.driver.change and change_lane
 
 

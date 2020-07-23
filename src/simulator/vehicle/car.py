@@ -2,20 +2,26 @@ import typing
 
 from simulator.position import Position
 from simulator.road.road import Road
+from simulator.vehicle.obstacle import Obstacle
 from simulator.vehicle.vehicle import Vehicle
 
 
 class Car(Vehicle):
+    # Car properties.
     road: Road
-    path: typing.List[typing.Tuple[Position, int]]
     limit: int
+
+    # Runtime properties.
+    path: typing.List[typing.Tuple[Position, int]]
+    zipped: typing.Set[Obstacle]
 
     def __init__(self, position: Position, velocity: int, road: Road,
                  length: int = 1, width: int = 1, limit: int = 0):
         super().__init__(position=position, velocity=velocity, length=length, width=width)
         self.road = road
-        self.path = []
         self.limit = limit
+        self.path = list()
+        self.zipped = set()
 
     def _getMaxSpeedUnlimited(self, position: Position) -> int:
         '''
@@ -99,7 +105,7 @@ class Car(Vehicle):
         '''
         return self.road.controller.getMaxSpeed(position=destination, width=self.width)
 
-    def _changeLane(self, destination: Position, force: bool = False) -> bool:
+    def _canChangeLane(self, destination: Position, force: bool = False) -> bool:
         '''
         Returns whether to change the lane to destination.
         :param destination: position on the road.
@@ -111,6 +117,71 @@ class Car(Vehicle):
             self._isChangePossible(destination=destination) and \
             self._isChangeBeneficial(destination=destination) and \
             self._isChangeSafe(destination=destination)
+
+    def _canAvoidObstacle(self, obstacle: Obstacle, destination: Position) -> bool:
+        '''
+        Returns whether it is possible to change the lane to destination, avoiding an obstacle
+        and zipping in front of another vehicle.
+        :param destination: position on the road.
+        :return: whether to change lane.
+        '''
+        # If there is no space in the destination lane return False.
+        if not self._isChangePossible(destination=destination):
+            return False
+        # If there is a space and it is safe to switch return False.
+        if self._isChangeSafe(destination=destination):
+            return True
+
+        # Specific strategies depend on a vehicle type on the destination lane.
+        _, vehicle = self.road.getPreviousVehicle(position=destination)
+        if vehicle is None:
+            return True
+
+        if isinstance(vehicle, Car):
+            return obstacle not in vehicle.zipped
+        elif isinstance(vehicle, Obstacle):
+            return True
+
+        # In case new vehicle types get added make sure we remember to add it here.
+        assert False, 'unreachable'
+
+    def _avoidObstacle(self, obstacle: Obstacle, destination: Position) -> None:
+        '''
+        Avoid given obstacle by changing lane to the destination lane.
+        :param obstacle: obstacle to avoid.
+        :param destination: destination to change to.
+        :return: None.
+        '''
+        # If it is safe to change the lane do not set any flags.
+        if self._isChangeSafe(destination=destination):
+            return
+        # Vehicle is not None otherwise it is safe to change the lane.
+        _, vehicle = self.road.getPreviousVehicle(position=destination)
+        assert vehicle is not None, 'unreachable'
+        # Zip in front of a different car.
+        if isinstance(vehicle, Car):
+            vehicle.zipped.add(obstacle)
+
+    def _tryChangeLanes(self) -> bool:
+        '''
+        Tries to change a lane for vehicle benefits.
+        :return: whether a lane was changed.
+        '''
+        raise NotImplementedError()
+
+    def _tryAvoidObstacle(self) -> bool:
+        '''
+        Checks if an obstacle blocks the current lane and tries to avoid it.
+        :return: whether a lane was changed.
+        '''
+        raise NotImplementedError()
+
+    def beforeMove(self) -> Position:
+        self.path.append((self.position, self.velocity))
+        self.last_position = self.position
+        if not self._tryAvoidObstacle():
+            self._tryChangeLanes()
+        return self.position
 
 
 def isCar(vehicle: Vehicle) -> bool:
