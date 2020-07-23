@@ -43,5 +43,9 @@ def addObstacle(road: Road, obstacle: ObstacleValue) -> None:
         raise ValueError(f'invalid obstacle, lane {lane} is not on the road')
     if not inBounds(begin, 0, road.length) or not inBounds(end, 0, road.length):
         raise ValueError(f'invalid obstacle, position {(begin, end)} is not on the road')
-    for x in range(begin, end + 1):
-        road.addVehicle(Obstacle(position=(x, lane)))
+
+    length = end - begin + 1
+    width = road.lane_width
+    position = road.getRelativePosition(position=(end, lane))
+    obstacle = Obstacle(position=position, width=width, length=length)
+    road.addVehicle(obstacle)

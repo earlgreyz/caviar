@@ -65,13 +65,17 @@ class Controller:
 
     def _drawObstacle(self, obstacle: Obstacle) -> None:
         x, y = obstacle.position
-        rect = (x * self.SIZE, y * self.SIZE, self.SIZE, self.SIZE)
+        x -= obstacle.length
+        length = obstacle.length * self.SIZE
+        width = obstacle.width * self.SIZE
+        rect = (x * self.SIZE + 1, y * self.SIZE + 1, length - 2, width - 2)
         pygame.draw.rect(self.screen, CL_OBSTACLE, rect)
 
     def _drawVehicle(self, vehicle: Vehicle, factor: float) -> None:
         ax, ay = vehicle.last_position
         bx, by = vehicle.position
         x, y = ax + (bx - ax) * factor, ay + (by - ay) * factor
+        x -= vehicle.length
         length = vehicle.length * self.SIZE
         width = vehicle.width * self.SIZE
         rect = (x * self.SIZE + 1, y * self.SIZE + 1, length - 2, width - 2)

@@ -9,20 +9,22 @@ class VehicleFlags(enum.Flag):
 
 
 class Vehicle:
+    # Vehicle properties.
     position: Position
-    last_position: Position
     velocity: int
     length: int
     width: int
 
+    # Runtime properties.
+    last_position: Position
     flags: VehicleFlags
 
     def __init__(self, position: Position, velocity: int = 0, length: int = 1, width: int = 1):
         self.position = position
-        self.last_position = position
         self.velocity = velocity
         self.length = length
         self.width = width
+        self.last_position = position
         self.flags = VehicleFlags.NONE
 
     def beforeMove(self) -> Position:
