@@ -42,6 +42,16 @@ class Road:
         x, lane = position
         return x, lane * self.lane_width + self.lane_width // 2
 
+    def getAbsolutePosition(self, position: Position) -> Position:
+        '''
+        Translates relative position (considering the lanes division) to the absolute position
+        on the road.
+        :param position:
+        :return:
+        '''
+        x, lane = position
+        return x, (lane - self.lane_width // 2) // self.lane_width
+
     def addVehicle(self, vehicle: Vehicle) -> None:
         '''
         Adds a new vehicle to the road.

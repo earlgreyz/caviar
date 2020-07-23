@@ -617,6 +617,24 @@ class RoadTestCase(unittest.TestCase):
         self.assertEqual(road.getRelativePosition((0, 1)), (0, 15))
         self.assertEqual(road.getRelativePosition((42, 1)), (42, 15))
 
+    def test_getAbsolutePosition(self):
+        road = Road(100, 2, lane_width=1)
+        for x in range(100):
+            for lane in range(2):
+                position = (x, lane)
+                result = road.getAbsolutePosition(position=position)
+                self.assertEqual(result, position, f'invalid position for ({x}, {lane})')
+        road = Road(100, 2, lane_width=2)
+        self.assertEqual(road.getAbsolutePosition((0, 1)), (0, 0))
+        self.assertEqual(road.getAbsolutePosition((42, 1)), (42, 0))
+        self.assertEqual(road.getAbsolutePosition((0, 3)), (0, 1))
+        self.assertEqual(road.getAbsolutePosition((42, 3)), (42, 1))
+        road = Road(100, 2, lane_width=10)
+        self.assertEqual(road.getAbsolutePosition((0, 5)), (0, 0))
+        self.assertEqual(road.getAbsolutePosition((42, 5)), (42, 0))
+        self.assertEqual(road.getAbsolutePosition((0, 15)), (0, 1))
+        self.assertEqual(road.getAbsolutePosition((42, 15)), (42, 1))
+
     def test_isProperPosition(self):
         road = Road(100, 1, lane_width=1)
         self.assertTrue(road.isProperPosition(position=(0, 0)))
