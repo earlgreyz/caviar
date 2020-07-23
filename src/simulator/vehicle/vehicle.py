@@ -1,10 +1,11 @@
 import enum
 
 from simulator.position import Position
+from util.enum import withLimits
 
 
+@withLimits
 class VehicleFlags(enum.Flag):
-    NONE = 0
     MOVED = enum.auto()
 
 
