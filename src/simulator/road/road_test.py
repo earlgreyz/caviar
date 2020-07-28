@@ -5,7 +5,6 @@ from itertools import chain, combinations
 
 from simulator.position import Position
 from simulator.road.road import Road, CollisionError
-from simulator.statistics import AverageResult
 from simulator.vehicle.vehicle import Vehicle, VehicleFlags
 
 
@@ -691,50 +690,14 @@ class RoadTestCase(unittest.TestCase):
             road.isSafePosition = Mock(side_effect=mock_isSafePosition(invalid=invalid))
             self.assertFalse(road.canPlaceVehicle(vehicle=vehicle), msg=f'invalid={invalid}')
 
-    def test_getAverageVelocityFiltered(self):
+    def test_step(self):
         road = Road(100, 1, lane_width=1)
-        vehicles: typing.List[Vehicle] = []
-        for velocity in range(10):
-            vehicle = Mock()
-            vehicle.velocity = velocity
-            vehicles.append(vehicle)
-        road.getAllVehicles = lambda: vehicles
-        # No vehicles matching the predicate.
-        result = road.getAverageVelocityFiltered(lambda _: False)
-        expected = AverageResult(value=0, count=0)
-        self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))
-        # All vehicles matching the predicate.
-        result = road.getAverageVelocityFiltered(lambda _: True)
-        expected = AverageResult(value=45, count=10)
-        self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))
+        vehicle = Mock()
+        road._updateLanes = lambda f: f(vehicle)
+        road.step()
+        vehicle.beforeMove.assert_called_once()
+        vehicle.move.assert_called_once()
 
-        # Some vehicles matching the predicate.
-        def isEven(vehicle):
-            return vehicle.velocity % 2 == 0
 
-        result = road.getAverageVelocityFiltered(isEven)
-        expected = AverageResult(value=20, count=5)
-        self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))
-
-        def test_getAverageVelocity(self):
-            road = Road(100, 1, lane_width=1)
-            vehicles: typing.List[Vehicle] = []
-            for velocity in range(10):
-                vehicle = Mock()
-                vehicle.velocity = velocity
-                vehicles.append(vehicle)
-            road.getAllVehicles = lambda: vehicles
-            result = road.getAverageVelocity()
-            expected = AverageResult(value=45, count=10)
-            self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))
-
-        def test_step(self):
-            road = Road(100, 1, lane_width=1)
-            vehicle = Mock()
-            road._updateLanes = lambda f: f(vehicle)
-            road.step()
-            vehicle.beforeMove.assert_called_once()
-            vehicle.move.assert_called_once()
-
-    if __name__ == '__main__':
-        unittest.main()
+if __name__ == '__main__':
+    unittest.main()

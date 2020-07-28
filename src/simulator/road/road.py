@@ -2,7 +2,6 @@ import typing
 
 from simulator.position import Position, inBounds
 from simulator.road.speedcontroller import SpeedController
-from simulator.statistics import Filter, AverageResult
 from simulator.vehicle.vehicle import Vehicle, VehicleFlags
 
 
@@ -181,16 +180,6 @@ class Road:
         self.removed = []
         self._updateLanes(lambda vehicle: vehicle.beforeMove())
         self._updateLanes(lambda vehicle: vehicle.move())
-
-    def getAverageVelocityFiltered(self, predicate: Filter) -> AverageResult:
-        velocity, count = 0, 0
-        for vehicle in filter(predicate, self.getAllVehicles()):
-            velocity += vehicle.velocity
-            count += 1
-        return AverageResult(value=velocity, count=count)
-
-    def getAverageVelocity(self) -> AverageResult:
-        return self.getAverageVelocityFiltered(lambda _: True)
 
 
 class CollisionError(RuntimeError):
