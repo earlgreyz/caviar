@@ -40,6 +40,7 @@ class VelocityChart:
         plt.savefig(plt_path, bbox_inches='tight')
 
     def _prepareChart(self) -> None:
+        plt.figure(figsize=(6, 4))
         sns.set_style('darkgrid')
         data = pd.DataFrame({
             'All': self.car.sum(axis=0) / self.car.shape[0],
