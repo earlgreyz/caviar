@@ -67,3 +67,29 @@ class HeatMap:
         plt.sca(ax_plot)
         ax_plot.set(xlabel=None, ylabel=None, ylim=(0, self.max_value), title=f'{self.title}\n')
         sns.lineplot(data=self.data.sum(axis=0))
+
+
+@click.command()
+@click.option('--title', '-t', default='Traffic density', help='Title')
+@click.option('--ylim', '-y', default=1.0, help='Maximum value on the cumulative graph')
+@click.option('--files', '-f', multiple=True, type=click.File())
+def main(title: str, ylim: float, files):
+    data = None
+    if len(files) < 1:
+        click.secho('Requires at least one data file', fg='red')
+        exit(1)
+
+    for file in files:
+        current = pd.read_csv(file, header=0, index_col=0)
+        if data is not None:
+            data += current
+        else:
+            data = current
+
+    data /= len(files)
+    heatmap = HeatMap(data.values.tolist(), title=title, max_value=ylim)
+    heatmap.plot()
+
+
+if __name__ == '__main__':
+    main()
