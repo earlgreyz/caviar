@@ -81,6 +81,8 @@ class Collector(Hook):
             last_x, _ = self._road.getAbsolutePosition(vehicle.last_position)
             cur_x, lane = self._road.getAbsolutePosition(vehicle.position)
             for x in range(last_x, cur_x):
+                if x >= self._road.length:
+                    continue
                 value = AverageResult(value=vehicle.velocity, count=1)
                 if isCar(vehicle):
                     self.velocity[lane][x] += value

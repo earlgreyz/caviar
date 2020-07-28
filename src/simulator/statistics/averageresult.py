@@ -28,3 +28,8 @@ class AverageResult:
         if self.count == 0:
             return None
         return float(self)
+
+    def toZeroFloat(self) -> float:
+        if self.count == 0:
+            return 0.
+        return float(self)

@@ -1,15 +1,15 @@
 import itertools
-import typing
 
 import pygame
 
 from interface.gui.colors import Colors, gradient, Color
 from simulator.simulator import Simulator
-from simulator.statistics import Statistics
+from simulator.statistics.tracker import Tracker
 from simulator.vehicle.autonomous import AutonomousCar
 from simulator.vehicle.car import Car
 from simulator.vehicle.obstacle import Obstacle
 from simulator.vehicle.vehicle import Vehicle
+from util.format import OptionalFormat
 
 CL_OBSTACLE = Colors.DARK
 CL_ROAD = Colors.LIGHT
@@ -30,7 +30,6 @@ class Controller:
     passed: float
     speed: float
     clock: pygame.time.Clock
-    statistics: Statistics
 
     def __init__(self, simulator: Simulator):
         self.simulator = simulator
@@ -39,20 +38,25 @@ class Controller:
         self.height = self.simulator.road.sublanesCount * self.SIZE
         self.screen = pygame.display.set_mode((self.width, self.height + self.STATS_SIZE))
 
-    def run(self, speed: float = 100., refresh: int = 60) -> None:
+    def run(self, speed: float = 100., refresh: int = 60, buffer: int = 1) -> None:
         # Initialize parameters.
         self.speed = speed
         self.passed = 0
         self.running = True
         self.clock = pygame.time.Clock()
         # Initialize statistics.
-        self.statistics: Statistics = self.simulator.step()
-        while self.running:
-            self._updateEvents()
-            if self._updateTime():
-                self.statistics = self.simulator.step()
-            self._draw()
-            self.clock.tick(refresh)
+        with Tracker(simulator=self.simulator, buffer_size=buffer) as tracker:
+            while self.running:
+                self._updateEvents()
+                if self._updateTime():
+                    self.simulator.step()
+
+                self.screen.fill(CL_ROAD)
+                self._drawVehicles(self.passed / self.speed)
+                self._drawStatistics(tracker)
+                pygame.display.flip()
+                pygame.display.update()
+                self.clock.tick(refresh)
         pygame.quit()
 
     def _drawVehicles(self, factor: float) -> None:
@@ -105,41 +109,25 @@ class Controller:
             return True
         return False
 
-    def _draw(self) -> None:
-        self.screen.fill(CL_ROAD)
-        self._drawVehicles(self.passed / self.speed)
-        self._drawStatistics()
-        pygame.display.flip()
-        pygame.display.update()
-
-    def _drawStatistics(self) -> None:
+    def _drawStatistics(self, tracker: Tracker) -> None:
         rect = (0, self.height, self.width, self.STATS_SIZE)
         pygame.draw.rect(self.screen, CL_BACKGROUND, rect)
         font = pygame.font.Font(pygame.font.get_default_font(), self.SIZE)
+        statistics = {
+            'steps': tracker.steps,
+            'velocity': tracker.velocity.value().toMaybeFloat(),
+            'velocity_autonomous': tracker.velocity_autonomous.value().toMaybeFloat(),
+            'velocity_conventional': tracker.velocity_conventional.value().toMaybeFloat(),
+        }
         text = font.render(
-            'Steps={steps} | Velocity={average_velocity:.2f} | '
-            'Conventional Velocity={average_velocity_conventional:.2f} | '
-            'Autonomous Velocity={average_velocity_autonomous:.2f}'.format(
-                **withOptionalFormat(self.statistics)),
-            True, CL_TEXT)
+            'Steps={steps} | Velocity={velocity:.2f} | '
+            'Conventional Velocity={velocity_conventional:.2f} | '
+            'Autonomous Velocity={velocity_autonomous:.2f}'.format(
+                **withOptionalFormat(statistics)), True, CL_TEXT)
         rect = text.get_rect()
         rect.center = (self.width // 2, self.height + self.STATS_SIZE // 2)
         self.screen.blit(text, rect)
 
 
-T = typing.TypeVar('T')
-
-
-class OptionalFormat(typing.Generic[T]):  # The wrapper is not type-specific
-    def __init__(self, value: typing.Optional[T]):
-        self.value = value
-
-    def __format__(self, *args, **kwargs) -> str:
-        if self.value is None:
-            return '~'
-        else:
-            return self.value.__format__(*args, **kwargs)
-
-
-def withOptionalFormat(statistics: Statistics) -> Statistics:
+def withOptionalFormat(statistics):
     return {k: OptionalFormat(v) for k, v in statistics.items()}

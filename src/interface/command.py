@@ -12,6 +12,7 @@ from simulator.dispatcher.mixed import MixedDispatcher
 from simulator.road.dense import DenseRoad
 from simulator.road.speedcontroller import SpeedController
 from simulator.simulator import Simulator
+from simulator.statistics.collector import Statistics
 from simulator.vehicle.conventional import Driver
 
 
@@ -41,7 +42,6 @@ def configProvider(file_path: str, cmd: str) -> typing.Dict[str, typing.Any]:
 @click.option('--limit', default=0, help='Difference in maximum speed between vehicles')
 # Other options.
 @click.option('--seed', type=int, help='Seed for the RNG')
-@click.option('--buffer', default=10, help='Number of steps in moving average calculation')
 # Configuration file option.
 @click_config_file.configuration_option(provider=configProvider, implicit=False)
 @click.pass_context
@@ -61,7 +61,6 @@ def command(ctx: click.Context, **kwargs) -> None:
     limit: int = kwargs['limit']
     obstacles: typing.List[ObstacleValue] = kwargs['obstacles']
     seed: typing.Optional[int] = kwargs['seed']
-    buffer: int = kwargs['buffer']
     # Initialize random number generator.
     if seed is not None:
         random.seed(seed)
@@ -78,7 +77,7 @@ def command(ctx: click.Context, **kwargs) -> None:
         count=dispatch, road=road, penetration=penetration,
         driver=driver, length=car_length, limit=limit)
     # Create the simulator and scatter vehicles.
-    simulator = Simulator(road=road, dispatcher=dispatcher, buffer_size=buffer)
+    simulator = Simulator(road=road, dispatcher=dispatcher)
     simulator.scatterVehicles(density=density)
     ctx.obj = simulator
 
@@ -86,17 +85,29 @@ def command(ctx: click.Context, **kwargs) -> None:
 @command.command()
 @click.option('--step', default=100, help='Animation time of a single simulation step (ms)')
 @click.option('--fps', default=30, help='Animation frames per second')
+@click.option('--buffer', default=1, help='Statistics buffer size')
 @click.pass_context
-def gui(ctx: click.Context, step: int, fps: int) -> None:
+def gui(ctx: click.Context, step: int, fps: int, buffer: int) -> None:
     controller = GUIController(simulator=ctx.obj)
-    controller.run(speed=step, refresh=fps)
+    controller.run(speed=step, refresh=fps, buffer=buffer)
 
 
 @command.command()
 @click.option('--steps', default=1000, help='Number of simulation steps to run')
-@click.option('--individual', default=False, is_flag=True, help='Show individual statistics')
-@click.option('--final', default=False, is_flag=True, help='Show only final statistics')
+@click.option('--skip', default=0, help='Skip first n steps when gathering statistics')
+@click.option('--output', '-o', type=click.Path(file_okay=False), help='Output directory')
+@click.option('--prefix', '-p', default='', help='Output files name prefix')
+@click.option('--no-velocity', is_flag=True, help='Do not generate velocity statistics')
+@click.option('--no-traffic', is_flag=True, help='Do not generate traffic density statistics')
+@click.option('--no-throughput', is_flag=True, help='Do not generate throughput statistics')
 @click.pass_context
-def cli(ctx: click.Context, steps: int, individual: bool, final: bool):
+def cli(ctx: click.Context, no_velocity: bool, no_traffic: bool, no_throughput: bool, **kwargs):
     controller = CLIController(simulator=ctx.obj)
-    controller.run(steps=steps, individual=individual, final=final)
+    statistics = Statistics.ALL
+    if no_velocity:
+        statistics &= ~statistics.VELOCITY
+    if no_traffic:
+        statistics &= ~statistics.HEAT_MAP
+    if no_throughput:
+        statistics &= ~statistics.THROUGHPUT
+    controller.run(statistics=statistics, **kwargs)
