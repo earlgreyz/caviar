@@ -25,7 +25,7 @@ def main(output: typing.Optional[str], prefix: str, files):
 
     data /= len(files)
     if output is not None:
-        csv_path = os.path.join(output, f'{prefix}_average.csv')
+        csv_path = os.path.join(output, f'{prefix}.csv')
         data.to_csv(csv_path)
     else:
         print(data.to_csv())
