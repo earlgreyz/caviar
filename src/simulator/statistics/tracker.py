@@ -69,7 +69,7 @@ class Tracker(Hook):
 
     def getCSV(self) -> str:
         def fmt(x: typing.Optional[float]) -> str:
-            return '{:.2f}'.format(OptionalFormat(x))
+            return '{:.4f}'.format(OptionalFormat(x))
 
         statistics = {
             'velocity': self.getVelocity(),

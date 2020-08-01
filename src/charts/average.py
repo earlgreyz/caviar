@@ -17,18 +17,18 @@ def main(output: typing.Optional[str], prefix: str, files):
         exit(1)
 
     for file in files:
-        current = pd.read_csv(file, header=0, index_col=0)
+        current = pd.read_csv(file, header=0)
         if data is not None:
-            data += current
+            data = data.add(current, axis=1)
         else:
             data = current
 
     data /= len(files)
     if output is not None:
         csv_path = os.path.join(output, f'{prefix}.csv')
-        data.to_csv(csv_path)
+        data.to_csv(csv_path, index=False)
     else:
-        print(data.to_csv())
+        print(data.to_csv(index=False))
 
 
 if __name__ == '__main__':
