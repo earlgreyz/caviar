@@ -8,10 +8,12 @@ class SizedList(typing.Generic[T]):
     index: int
     items: typing.List[T]
 
-    def __init__(self, size: int):
+    def __init__(self, size: int, *items: T):
         self.size = size
         self.index = 0
         self.items = []
+        for item in items:
+            self.append(item)
 
     def __len__(self) -> int:
         return len(self.items)

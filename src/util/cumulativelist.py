@@ -6,8 +6,8 @@ T = typing.TypeVar('T')
 
 
 class CumulativeList(SizedList[T]):
-    def __init__(self, size: int):
-        super().__init__(size + 1)
+    def __init__(self, size: int, *items: T):
+        super().__init__(size + 1, *items)
 
     def append(self, item: T) -> None:
         if len(self) == 0:

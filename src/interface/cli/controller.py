@@ -1,3 +1,4 @@
+import os
 import typing
 import click
 
@@ -18,13 +19,13 @@ class Controller:
     def __init__(self, simulator: Simulator):
         self.simulator = simulator
 
-    def run(self, steps: int, skip: int, statistics: Statistics,
+    def run(self, steps: int, skip: int, statistics: Statistics, only_data: bool,
             output: typing.Optional[str] = None, prefix: str = '') -> None:
         with Collector(simulator=self.simulator, statistics=statistics, skip=skip) as collector, \
                 Tracker(simulator=self.simulator, buffer_size=steps - skip) as tracker:
 
             def show_stats(_: typing.Any) -> str:
-                return '{:.2f} [C:{:.2f} | A:{:.2f}]'.format(
+                return '{:.2f}|{:.2f}|{:.2f} (Average|Conventional|Autonomous)'.format(
                     OptionalFormat(tracker.velocity.value().toMaybeFloat()),
                     OptionalFormat(tracker.velocity_conventional.value().toMaybeFloat()),
                     OptionalFormat(tracker.velocity_autonomous.value().toMaybeFloat()),
@@ -36,21 +37,21 @@ class Controller:
 
             if statistics & Statistics.THROUGHPUT:
                 click.secho('Generating throughput charts', fg='blue')
-                throughput_map = HeatMap(
+                throughput = HeatMap(
                     data=collector.getThrougput(), title='Throughput', max_value=3)
                 if output is not None:
-                    throughput_map.save(path=output, prefix=f'{prefix}_throughput')
+                    throughput.save(path=output, prefix=f'{prefix}_throughput', only_data=only_data)
                 else:
-                    throughput_map.plot()
+                    throughput.show(only_data=only_data)
 
             if statistics & Statistics.HEAT_MAP:
                 click.secho('Generating traffic density charts', fg='blue')
                 heat_map = HeatMap(
                     data=collector.getHeatMap(), title='Traffic density', max_value=1)
                 if output is not None:
-                    heat_map.save(path=output, prefix=f'{prefix}_traffic')
+                    heat_map.save(path=output, prefix=f'{prefix}_traffic', only_data=only_data)
                 else:
-                    heat_map.plot()
+                    heat_map.show(only_data=only_data)
 
             if statistics & Statistics.VELOCITY:
                 click.secho('Generating speed charts', fg='blue')
@@ -67,14 +68,13 @@ class Controller:
                 velocity = VelocityChart(
                     car=velocity, autonomous=autonomous, conventional=conventional)
                 if output is not None:
-                    velocity.save(path=output, prefix=f'{prefix}_speed')
+                    velocity.save(path=output, prefix=f'{prefix}_speed', only_data=only_data)
                 else:
-                    velocity.plot()
+                    velocity.show(only_data=only_data)
 
-            click.secho('Average statistics', fg='blue')
-            click.echo('average,\tconventional,\tautonomous')
-            click.echo('{:.2f},\t{:.2f},\t{:.2f}'.format(
-                OptionalFormat(tracker.velocity.value().toMaybeFloat()),
-                OptionalFormat(tracker.velocity_conventional.value().toMaybeFloat()),
-                OptionalFormat(tracker.velocity_autonomous.value().toMaybeFloat()),
-            ))
+            click.secho('Generating average statistics', fg='blue')
+            if output is not None:
+                with open(os.path.join(output, f'{prefix}_average.csv'), mode='w') as f:
+                    f.write(tracker.getCSV())
+            else:
+                click.echo(tracker.getCSV())

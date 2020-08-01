@@ -100,6 +100,7 @@ def gui(ctx: click.Context, step: int, fps: int, buffer: int) -> None:
 @click.option('--no-velocity', is_flag=True, help='Do not generate velocity statistics')
 @click.option('--no-traffic', is_flag=True, help='Do not generate traffic density statistics')
 @click.option('--no-throughput', is_flag=True, help='Do not generate throughput statistics')
+@click.option('--only-data', is_flag=True, help='Do not generate charts')
 @click.pass_context
 def cli(ctx: click.Context, no_velocity: bool, no_traffic: bool, no_throughput: bool, **kwargs):
     controller = CLIController(simulator=ctx.obj)

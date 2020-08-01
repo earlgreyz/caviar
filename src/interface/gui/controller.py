@@ -1,6 +1,10 @@
 import itertools
 
-import pygame
+import contextlib
+
+# Suppress the pygame welcome message.
+with contextlib.redirect_stdout(None):
+    import pygame
 
 from interface.gui.colors import Colors, gradient, Color
 from simulator.simulator import Simulator

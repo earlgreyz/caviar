@@ -19,22 +19,23 @@ class HeatMap:
         self.title = title
         self.max_value = max_value
 
-    def plot(self) -> None:
+    def show(self, only_data: bool) -> None:
         click.secho(self.title, fg='yellow')
         print(self.data.to_csv())
-        self._prepareChart()
-        plt.show()
+        if not only_data:
+            self._prepareChart()
+            plt.show()
 
-    def save(self, path: str, prefix: str) -> None:
+    def save(self, path: str, prefix: str, only_data: bool) -> None:
         csv_path = os.path.join(path, f'{prefix}.csv')
         self.data.to_csv(csv_path)
-        self._prepareChart()
-        plt_path = os.path.join(path, f'{prefix}.png')
-        plt.savefig(plt_path, bbox_inches='tight')
+        if not only_data:
+            self._prepareChart()
+            plt_path = os.path.join(path, f'{prefix}.png')
+            plt.savefig(plt_path, bbox_inches='tight')
 
     def _prepareChart(self) -> None:
         sns.set_style('darkgrid')
-        length = len(self.data[0])
 
         # Set up the subplot grid
         f = plt.figure(figsize=(6, 4))
@@ -56,12 +57,8 @@ class HeatMap:
         f.tight_layout()
 
         plt.sca(ax_heatmap)
-        N = 10
-        xticks = [(length // N) * i for i in range(N + 1)]
-        sns.heatmap(self.data, linewidth=0.01,
-                    cbar_kws=dict(orientation='horizontal', shrink=.75, aspect=25, pad=.2))
-        ax_heatmap.set_xticks(xticks)
-        ax_heatmap.set_xticklabels(xticks)
+        sns.heatmap(self.data, linewidth=0.01, xticklabels=10, cbar_kws=dict(
+            orientation='horizontal', shrink=.75, aspect=25, pad=.2))
         ax_heatmap.set(ylabel='Lane')
 
         plt.sca(ax_plot)
@@ -72,8 +69,10 @@ class HeatMap:
 @click.command()
 @click.option('--title', '-t', default='Traffic density', help='Title')
 @click.option('--ylim', '-y', default=1.0, help='Maximum value on the cumulative graph')
-@click.option('--files', '-f', multiple=True, type=click.File())
-def main(title: str, ylim: float, files):
+@click.option('--output', '-o', default=None, help='Save output to a directory')
+@click.option('--prefix', '-p', default='', help='Prefix for output file names')
+@click.argument('files', nargs=-1, type=click.File())
+def main(title: str, ylim: float, output: typing.Optional[str], prefix: str, files):
     data = None
     if len(files) < 1:
         click.secho('Requires at least one data file', fg='red')
@@ -88,7 +87,10 @@ def main(title: str, ylim: float, files):
 
     data /= len(files)
     heatmap = HeatMap(data.values.tolist(), title=title, max_value=ylim)
-    heatmap.plot()
+    if output is not None:
+        heatmap.save(output, prefix, only_data=False)
+    else:
+        heatmap.show(only_data=False)
 
 
 if __name__ == '__main__':
