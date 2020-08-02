@@ -18,7 +18,7 @@ class DecelerationsTestCase(unittest.TestCase):
             vehicle.velocity = velocity
             vehicle.path = [((0, 0), 12)]
             vehicles.append(vehicle)
-        road.getAllVehicles = lambda: vehicles
+        road.getAllActiveVehicles = lambda: vehicles
         # No vehicles matching the predicate.
         result = getDecelerationsFiltered(road, lambda _: False)
         self.assertEqual(0, result)
@@ -54,7 +54,7 @@ class DecelerationsTestCase(unittest.TestCase):
             vehicle.velocity = 9
             vehicle.path = [((0, 0), 10)]
             vehicles.append(vehicle)
-        road.getAllVehicles = lambda: vehicles
+        road.getAllActiveVehicles = lambda: vehicles
         result = getDecelerations(road)
         self.assertEqual(10, result)
 

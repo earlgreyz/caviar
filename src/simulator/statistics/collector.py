@@ -1,5 +1,4 @@
 import enum
-import itertools
 import typing
 
 from simulator.road.road import Road
@@ -76,8 +75,7 @@ class Collector(Hook):
              for _ in range(self._road.lanes_count)]
 
     def _collectVelocity(self) -> None:
-        for vehicle in itertools.chain(
-                self.simulator.road.getAllVehicles(), self.simulator.road.removed):
+        for vehicle in self._road.getAllActiveVehicles():
             last_x, _ = self._road.getAbsolutePosition(vehicle.last_position)
             cur_x, lane = self._road.getAbsolutePosition(vehicle.position)
             for x in range(last_x, cur_x):
@@ -95,8 +93,7 @@ class Collector(Hook):
         self.throughput = [[0] * self._road.length for _ in range(self._road.lanes_count)]
 
     def _collectThroughput(self) -> None:
-        for vehicle in itertools.chain(
-                self.simulator.road.getAllVehicles(), self.simulator.road.removed):
+        for vehicle in self._road.getAllActiveVehicles():
             last_x, _ = self._road.getAbsolutePosition(vehicle.last_position)
             cur_x, lane = self._road.getAbsolutePosition(vehicle.position)
             for x in range(last_x, cur_x):
@@ -119,8 +116,7 @@ class Collector(Hook):
         self.heat_map = [[.0] * self._road.length for _ in range(self._road.lanes_count)]
 
     def _collectHeatMap(self) -> None:
-        for vehicle in itertools.chain(
-                self.simulator.road.getAllVehicles(), self.simulator.road.removed):
+        for vehicle in self._road.getAllActiveVehicles():
             last_x, _ = self._road.getAbsolutePosition(vehicle.last_position)
             cur_x, lane = self._road.getAbsolutePosition(vehicle.position)
             value = 1. / (cur_x - last_x + 1)

@@ -11,7 +11,7 @@ def getLaneChangesFiltered(road: Road, predicate: Filter) -> int:
         _, lane = vehicle.position
         return last_lane != lane
 
-    return ilen(filter(combine(predicate, isLaneChange), road.getAllVehicles()))
+    return ilen(filter(combine(predicate, isLaneChange), road.getAllActiveVehicles()))
 
 
 def getLaneChanges(road: Road) -> int:

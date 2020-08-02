@@ -16,7 +16,7 @@ class VelocityTestCase(unittest.TestCase):
             vehicle = Mock()
             vehicle.velocity = velocity
             vehicles.append(vehicle)
-        road.getAllVehicles = lambda: vehicles
+        road.getAllActiveVehicles = lambda: vehicles
         # No vehicles matching the predicate.
         result = getAverageVelocityFiltered(road, lambda _: False)
         expected = AverageResult(value=0, count=0)
@@ -41,7 +41,7 @@ class VelocityTestCase(unittest.TestCase):
             vehicle = Mock()
             vehicle.velocity = velocity
             vehicles.append(vehicle)
-        road.getAllVehicles = lambda: vehicles
+        road.getAllActiveVehicles = lambda: vehicles
         result = getAverageVelocity(road)
         expected = AverageResult(value=45, count=10)
         self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))

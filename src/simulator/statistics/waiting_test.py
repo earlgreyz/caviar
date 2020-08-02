@@ -17,7 +17,7 @@ class WaitingTestCase(unittest.TestCase):
             vehicle.position = (x, 0)
             vehicle.last_position = (x, 0)
             vehicles.append(vehicle)
-        road.getAllVehicles = lambda: vehicles
+        road.getAllActiveVehicles = lambda: vehicles
         # No vehicles matching the predicate.
         result = getWaitingFiltered(road, lambda _: False)
         self.assertEqual(0, result)
@@ -46,7 +46,7 @@ class WaitingTestCase(unittest.TestCase):
             vehicle.position = (x, 0)
             vehicle.last_position = (x - 5, 0)
             vehicles.append(vehicle)
-        road.getAllVehicles = lambda: vehicles
+        road.getAllActiveVehicles = lambda: vehicles
         result = getWaiting(road)
         self.assertEqual(10, result)
 

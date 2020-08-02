@@ -9,7 +9,7 @@ def getWaitingFiltered(road: Road, predicate: Filter) -> int:
     def isWaiting(vehicle: Vehicle) -> bool:
         return vehicle.position == vehicle.last_position
 
-    return ilen(filter(combine(predicate, isWaiting), road.getAllVehicles()))
+    return ilen(filter(combine(predicate, isWaiting), road.getAllActiveVehicles()))
 
 
 def getWaiting(road: Road) -> int:

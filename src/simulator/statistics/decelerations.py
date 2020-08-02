@@ -13,7 +13,7 @@ def getDecelerationsFiltered(road: Road, predicate: Filter) -> int:
         _, last_velocity = vehicle.path[-1]
         return last_velocity - vehicle.velocity > 1
 
-    return ilen(filter(combine(predicate, isDeceleration), road.getAllVehicles()))
+    return ilen(filter(combine(predicate, isDeceleration), road.getAllActiveVehicles()))
 
 
 def getDecelerations(road: Road) -> int:

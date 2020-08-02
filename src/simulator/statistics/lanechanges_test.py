@@ -17,7 +17,7 @@ class LaneChangesTestCase(unittest.TestCase):
             vehicle.position = (10 + x, 0)
             vehicle.last_position = (x, 1)
             vehicles.append(vehicle)
-        road.getAllVehicles = lambda: vehicles
+        road.getAllActiveVehicles = lambda: vehicles
         # No vehicles matching the predicate.
         result = getLaneChangesFiltered(road, lambda _: False)
         self.assertEqual(0, result)
@@ -46,7 +46,7 @@ class LaneChangesTestCase(unittest.TestCase):
             vehicle.position = (5 + x, 0)
             vehicle.last_position = (x, 0)
             vehicles.append(vehicle)
-        road.getAllVehicles = lambda: vehicles
+        road.getAllActiveVehicles = lambda: vehicles
         result = getLaneChanges(road)
         self.assertEqual(10, result)
 

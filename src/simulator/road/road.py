@@ -1,3 +1,4 @@
+import itertools
 import typing
 
 from simulator.position import Position, inBounds
@@ -68,12 +69,19 @@ class Road:
         '''
         raise NotImplementedError()
 
-    def getAllVehicles(self) -> typing.Generator[Vehicle, None, None]:
+    def getAllActiveVehicles(self) -> typing.Generator[Vehicle, None, None]:
         '''
         Gets all the vehicles on the road.
         :return: generator yielding all the vehicles.
         '''
         raise NotImplementedError()
+
+    def getAllVehicles(self) -> typing.Iterator[Vehicle]:
+        '''
+        Gets all vehicles on the road including recently removed vehicles.
+        :return: generator yielding all the vehicles.
+        '''
+        return itertools.chain(self.getAllActiveVehicles(), self.removed)
 
     def addPendingVehicle(self, vehicle: Vehicle) -> None:
         '''
@@ -156,10 +164,10 @@ class Road:
         :return: None.
         '''
         # Reset MOVED flag to keep track of vehicles already moved.
-        for vehicle in self.getAllVehicles():
+        for vehicle in self.getAllActiveVehicles():
             vehicle.flags &= ~VehicleFlags.MOVED
 
-        for vehicle in self.getAllVehicles():
+        for vehicle in self.getAllActiveVehicles():
             # Skip vehicles with MOVED flag set.
             if VehicleFlags.MOVED in vehicle.flags:
                 continue

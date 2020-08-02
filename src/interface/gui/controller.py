@@ -1,5 +1,3 @@
-import itertools
-
 import contextlib
 
 # Suppress the pygame welcome message.
@@ -64,8 +62,7 @@ class Controller:
         pygame.quit()
 
     def _drawVehicles(self, factor: float) -> None:
-        for vehicle in itertools.chain(
-                self.simulator.road.getAllVehicles(), self.simulator.road.removed):
+        for vehicle in self.simulator.road.getAllVehicles():
             if isinstance(vehicle, Obstacle):
                 self._drawObstacle(vehicle)
             else:

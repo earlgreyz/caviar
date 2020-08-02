@@ -38,7 +38,7 @@ class DenseRoad(Road):
         x, lane = position
         return self.lanes[lane][x]
 
-    def getAllVehicles(self) -> typing.Generator[Vehicle, None, None]:
+    def getAllActiveVehicles(self) -> typing.Generator[Vehicle, None, None]:
         for lane in range(self.sublanesCount):
             for x in reversed(range(self.length)):
                 vehicle = self.lanes[lane][x]
