@@ -3,7 +3,7 @@ import typing
 T = typing.TypeVar('T')
 
 
-class OptionalFormat(typing.Generic[T]):  # The wrapper is not type-specific
+class OptionalFormat(typing.Generic[T]):
     def __init__(self, value: typing.Optional[T]):
         self.value = value
 

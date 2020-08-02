@@ -1,9 +1,15 @@
 import unittest
+from unittest.mock import patch, call
 
 from util.sizedlist import SizedList
 
 
 class SizedListTestCase(unittest.TestCase):
+    def test_init(self):
+        with patch.object(SizedList, 'append') as patched_append:
+            _: SizedList[int] = SizedList(10, *range(20))
+            patched_append.assert_has_calls([call(i) for i in range(20)])
+
     def test_append(self):
         l: SizedList[int] = SizedList(20)
         for i in range(100):
