@@ -1,15 +1,17 @@
+from more_itertools import ilen
+
 from simulator.road.road import Road
-from simulator.statistics.filters import Filter
+from simulator.statistics.filters import Filter, combine
+from simulator.vehicle.vehicle import Vehicle
 
 
 def getLaneChangesFiltered(road: Road, predicate: Filter) -> int:
-    lane_changes = 0
-    for vehicle in filter(predicate, road.getAllVehicles()):
+    def isLaneChange(vehicle: Vehicle) -> bool:
         _, last_lane = vehicle.last_position
         _, lane = vehicle.position
-        if last_lane != lane:
-            lane_changes += 1
-    return lane_changes
+        return last_lane != lane
+
+    return ilen(filter(combine(predicate, isLaneChange), road.getAllVehicles()))
 
 
 def getLaneChanges(road: Road) -> int:

@@ -66,6 +66,12 @@ class MovingMeanTestCase(unittest.TestCase):
         self.assertEqual(.5, AverageResult(2, 4).toMaybeFloat())
         self.assertEqual(2.5, AverageResult(5, 2).toMaybeFloat())
 
+    def test_toZeroFloat(self):
+        self.assertEqual(0, AverageResult(42, 0).toZeroFloat())
+        self.assertEqual(.5, AverageResult(1, 2).toZeroFloat())
+        self.assertEqual(.5, AverageResult(2, 4).toZeroFloat())
+        self.assertEqual(2.5, AverageResult(5, 2).toZeroFloat())
+
 
 if __name__ == '__main__':
     unittest.main()
