@@ -20,7 +20,7 @@ class Controller:
     def __init__(self, simulator: Simulator):
         self.simulator = simulator
 
-    def run(self, steps: int, skip: int, statistics: Statistics, only_data: bool,
+    def run(self, steps: int, skip: int, statistics: Statistics, no_charts: bool,
             output: typing.Optional[str] = None, prefix: str = '') -> None:
         with Collector(simulator=self.simulator, statistics=statistics, skip=skip) as collector, \
                 Tracker(simulator=self.simulator, buffer_size=steps - skip) as tracker:
@@ -41,18 +41,18 @@ class Controller:
                 throughput = HeatMap(
                     data=collector.getThrougput(), title='Throughput', max_value=3)
                 if output is not None:
-                    throughput.save(path=output, prefix=f'{prefix}_throughput', only_data=only_data)
+                    throughput.save(path=output, prefix=f'{prefix}_throughput', only_data=no_charts)
                 else:
-                    throughput.show(only_data=only_data)
+                    throughput.show(only_data=no_charts)
 
             if statistics & Statistics.HEAT_MAP:
                 click.secho('Generating traffic density charts', fg='blue')
                 heat_map = HeatMap(
                     data=collector.getHeatMap(), title='Traffic density', max_value=1)
                 if output is not None:
-                    heat_map.save(path=output, prefix=f'{prefix}_traffic', only_data=only_data)
+                    heat_map.save(path=output, prefix=f'{prefix}_traffic', only_data=no_charts)
                 else:
-                    heat_map.show(only_data=only_data)
+                    heat_map.show(only_data=no_charts)
 
             if statistics & Statistics.VELOCITY:
                 click.secho('Generating speed charts', fg='blue')
@@ -69,9 +69,9 @@ class Controller:
                 velocity = VelocityChart(
                     car=velocity, autonomous=autonomous, conventional=conventional)
                 if output is not None:
-                    velocity.save(path=output, prefix=f'{prefix}_speed', only_data=only_data)
+                    velocity.save(path=output, prefix=f'{prefix}_speed', only_data=no_charts)
                 else:
-                    velocity.show(only_data=only_data)
+                    velocity.show(only_data=no_charts)
 
             click.secho('Generating average statistics', fg='blue')
             data = tracker.getAverageData()

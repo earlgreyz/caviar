@@ -93,22 +93,27 @@ def gui(ctx: click.Context, step: int, fps: int, buffer: int) -> None:
 
 
 @command.command()
+# Simulation parameters.
 @click.option('--steps', default=1000, help='Number of simulation steps to run')
 @click.option('--skip', default=0, help='Skip first n steps when gathering statistics')
+# Output parameters.
 @click.option('--output', '-o', type=click.Path(file_okay=False), help='Output directory')
 @click.option('--prefix', '-p', default='', help='Output files name prefix')
-@click.option('--no-velocity', is_flag=True, help='Do not generate velocity statistics')
-@click.option('--no-traffic', is_flag=True, help='Do not generate traffic density statistics')
-@click.option('--no-throughput', is_flag=True, help='Do not generate throughput statistics')
-@click.option('--only-data', is_flag=True, help='Do not generate charts')
+# Statistics generation.
+@click.option('--no-charts', is_flag=True, help='Do not generate charts')
+@click.option('--all-statistics', is_flag=True, help='Disable all statistics')
+@click.option('--velocity', is_flag=True, help='Toggle velocity statistics')
+@click.option('--heatmap', is_flag=True, help='Toggle heatmap statistics')
+@click.option('--throughput', is_flag=True, help='Toggle throughput statistics')
 @click.pass_context
-def cli(ctx: click.Context, no_velocity: bool, no_traffic: bool, no_throughput: bool, **kwargs):
+def cli(ctx: click.Context, all_statistics: bool, velocity: bool, heatmap: bool, throughput: bool,
+        **kwargs):
     controller = CLIController(simulator=ctx.obj)
-    statistics = Statistics.ALL
-    if no_velocity:
-        statistics &= ~statistics.VELOCITY
-    if no_traffic:
-        statistics &= ~statistics.HEAT_MAP
-    if no_throughput:
-        statistics &= ~statistics.THROUGHPUT
+    statistics = Statistics.ALL if all_statistics else Statistics.NONE
+    if velocity:
+        statistics ^= statistics.VELOCITY
+    if heatmap:
+        statistics ^= statistics.HEAT_MAP
+    if throughput:
+        statistics ^= statistics.THROUGHPUT
     controller.run(statistics=statistics, **kwargs)
