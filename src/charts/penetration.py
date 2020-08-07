@@ -1,10 +1,13 @@
+import os
+
 import click
 import pandas as pd
 import seaborn as sns
 import matplotlib.pylab as plt
+import typing
 
 
-def make_plot(df: pd.DataFrame, key: str, title: str, ylabel: str) -> None:
+def make_plot(df: pd.DataFrame, key: str, title: str, ylabel: str, output, prefix) -> None:
     # Prepare data.
     key_all = f'{key}_all'
     data_all = df[['x', key_all]] \
@@ -29,12 +32,19 @@ def make_plot(df: pd.DataFrame, key: str, title: str, ylabel: str) -> None:
     # Remove legend title.
     handles, labels = g.get_legend_handles_labels()
     g.legend(handles=handles[1:], labels=labels[1:])
-    plt.show()
+
+    if output is not None:
+        plt_path = os.path.join(output, f'{prefix}_{key}.png')
+        plt.savefig(plt_path, bbox_inches='tight')
+    else:
+        plt.show()
 
 
 @click.command()
+@click.option('--output', '-o', default=None, help='Save output to a directory')
+@click.option('--prefix', '-p', default='', help='Prefix for output file names')
 @click.argument('file', type=click.File())
-def main(file):
+def main(output: typing.Optional[str], prefix: str, file):
     df = pd.read_csv(file, header=0)
     keys = ['velocity', 'throughput', 'decelerations', 'laneChanges', 'waiting']
     titles = ['Average speed',
@@ -45,7 +55,7 @@ def main(file):
     ylabels = ['Speed', 'Throughput / Step', 'Decelerations / Step',
                'Lane Changes / Step', 'Waiting Vehicles / Step']
     for key, title, ylabel in zip(keys, titles, ylabels):
-        make_plot(df, key, title, ylabel)
+        make_plot(df, key, title, ylabel, output, prefix)
 
 
 if __name__ == '__main__':

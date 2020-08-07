@@ -9,11 +9,11 @@ for p in PENETRATION:
     for i in range(N):
         os.system(f'python src/main.py --penetration {p} --length 100 --lanes 3'
                   f' --obstacles=1:50-50 --symmetry cli --steps 10000 --skip 1000'
-                  f' --output=out --prefix="{prefix}__{i:02d}" --no-charts --throughput')
+                  f' --output=out --prefix="{prefix}__{i:02d}" --no-charts --heatmap')
     os.system(f'python src/charts/heatmap.py'
               f' -o out -p {prefix}.traffic out/{prefix}__*_traffic.csv')
     os.system(f'python src/charts/average.py -o out -p {prefix}.average'
               f' -x {penetration} out/{prefix}__*_average.csv')
 
 os.system('python src/charts/average.py --output=out --prefix=average out/*.average.csv')
-os.system('python src/charts/speed.py out/average.csv')
+os.system('python src/charts/penetration.py --output=out --prefix=average out/average.csv')
