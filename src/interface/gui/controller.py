@@ -1,6 +1,8 @@
 import contextlib
 
 # Suppress the pygame welcome message.
+from simulator.statistics.vehicletype import VehicleType
+
 with contextlib.redirect_stdout(None):
     import pygame
 
@@ -116,9 +118,9 @@ class Controller:
         font = pygame.font.Font(pygame.font.get_default_font(), self.SIZE)
         statistics = {
             'steps': tracker.steps,
-            'velocity': tracker.velocity.value().toMaybeFloat(),
-            'velocity_autonomous': tracker.velocity_autonomous.value().toMaybeFloat(),
-            'velocity_conventional': tracker.velocity_conventional.value().toMaybeFloat(),
+            'velocity': tracker.getAverageVelocity(VehicleType.ANY),
+            'velocity_autonomous': tracker.getAverageVelocity(VehicleType.AUTONOMOUS),
+            'velocity_conventional': tracker.getAverageVelocity(VehicleType.CONVENTIONAL),
         }
         text = font.render(
             'Steps={steps} | Velocity={velocity:.2f} | '

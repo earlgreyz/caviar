@@ -9,6 +9,7 @@ from simulator.simulator import Simulator
 from simulator.statistics.averageresult import AverageResult
 from simulator.statistics.collector import Collector, Statistics
 from simulator.statistics.tracker import Tracker
+from simulator.statistics.vehicletype import VehicleType
 
 from util.format import OptionalFormat
 
@@ -26,9 +27,9 @@ class Controller:
 
             def show_stats(_: typing.Any) -> str:
                 return '{:.2f}|{:.2f}|{:.2f} (Average|Conventional|Autonomous)'.format(
-                    OptionalFormat(tracker.velocity.value().toMaybeFloat()),
-                    OptionalFormat(tracker.velocity_conventional.value().toMaybeFloat()),
-                    OptionalFormat(tracker.velocity_autonomous.value().toMaybeFloat()),
+                    OptionalFormat(tracker.getAverageVelocity(VehicleType.ANY)),
+                    OptionalFormat(tracker.getAverageVelocity(VehicleType.CONVENTIONAL)),
+                    OptionalFormat(tracker.getAverageVelocity(VehicleType.AUTONOMOUS))
                 )
 
             with click.progressbar(range(steps), steps, item_show_func=show_stats) as bar:
@@ -73,8 +74,8 @@ class Controller:
                     velocity.show(only_data=only_data)
 
             click.secho('Generating average statistics', fg='blue')
+            data = tracker.getAverageData()
             if output is not None:
-                with open(os.path.join(output, f'{prefix}_average.csv'), mode='w') as f:
-                    f.write(tracker.getCSV())
+                data.to_csv(os.path.join(output, f'{prefix}_average.csv'), index=False)
             else:
-                click.echo(tracker.getCSV())
+                click.echo(data.to_csv(index=False))
