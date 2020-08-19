@@ -82,6 +82,9 @@ class Tracker(Hook):
 
         return self._trackPercentage(combine(predicate, isCar), isDeceleration)
 
+    def getAverageDecelerationsAbsolute(self, vehicle_type: VehicleType) -> int:
+        return self.decelerations[vehicle_type].value().value
+
     def getAverageDecelerations(self, vehicle_type: VehicleType) -> typing.Optional[float]:
         return self.decelerations[vehicle_type].value().toMaybeFloat()
 
@@ -93,6 +96,9 @@ class Tracker(Hook):
 
         return self._trackPercentage(predicate, isLaneChange)
 
+    def getAverageLaneChangesAbsolute(self, vehicle_type: VehicleType) -> int:
+        return self.lane_changes[vehicle_type].value().value
+
     def getAverageLaneChanges(self, vehicle_type: VehicleType) -> typing.Optional[float]:
         return self.lane_changes[vehicle_type].value().toMaybeFloat()
 
@@ -101,6 +107,9 @@ class Tracker(Hook):
             return vehicle.position == vehicle.last_position
 
         return self._trackPercentage(predicate, isWaiting)
+
+    def getAverageWaitingAbsolute(self, vehicle_type: VehicleType) -> int:
+        return self.waiting[vehicle_type].value().value
 
     def getAverageWaiting(self, vehicle_type: VehicleType) -> typing.Optional[float]:
         return self.waiting[vehicle_type].value().toMaybeFloat()
@@ -111,15 +120,22 @@ class Tracker(Hook):
             name = getVehicleTypeName(vehicle_type)
             statistics[f'velocity_{name}'] = self.getAverageVelocity(vehicle_type)
             statistics[f'throughput_{name}'] = self.getAverageThroughput(vehicle_type)
+            statistics[f'decelerations_absolute_{name}'] = \
+                self.getAverageDecelerationsAbsolute(vehicle_type)
             statistics[f'decelerations_{name}'] = self.getAverageDecelerations(vehicle_type)
+            statistics[f'laneChanges_absolute_{name}'] = \
+                self.getAverageLaneChangesAbsolute(vehicle_type)
             statistics[f'laneChanges_{name}'] = self.getAverageLaneChanges(vehicle_type)
+            statistics[f'waiting_absolute_{name}'] = \
+                self.getAverageWaitingAbsolute(vehicle_type)
             statistics[f'waiting_{name}'] = self.getAverageWaiting(vehicle_type)
 
         return pd.DataFrame(makeOrderedDict(statistics, AVERAGE_DATA_ORDER), index=[0])
 
 
 # Order for the average statistics.
-AVERAGE_DATA_KEYS = ['velocity', 'throughput', 'decelerations', 'laneChanges', 'waiting']
+AVERAGE_DATA_KEYS = ['velocity', 'throughput', 'decelerations_absolute', 'decelerations',
+                     'laneChanges_absolute', 'laneChanges', 'waiting_absolute', 'waiting']
 AVERAGE_DATA_ORDER = []
 for key in AVERAGE_DATA_KEYS:
     for vehicle_type in VehicleType:

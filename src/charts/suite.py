@@ -1,7 +1,7 @@
 import os
 
 PENETRATION = [.01, .1, .2, .3, .4, .5, .6, .7, .8, .9, .99]
-N = 10
+N = 5
 
 for p in PENETRATION:
     penetration = int(p * 100)
