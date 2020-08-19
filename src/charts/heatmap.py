@@ -31,7 +31,7 @@ class HeatMap:
         self.data.to_csv(csv_path)
         if not only_data:
             self._prepareChart()
-            plt_path = os.path.join(path, f'{prefix}.png')
+            plt_path = os.path.join(path, f'{prefix}.pdf')
             plt.savefig(plt_path, bbox_inches='tight')
 
     def _prepareChart(self) -> None:
@@ -62,8 +62,8 @@ class HeatMap:
         ax_heatmap.set(ylabel='Lane')
 
         plt.sca(ax_plot)
-        ax_plot.set(xlabel=None, ylabel=None, ylim=(0, self.max_value), title=f'{self.title}\n')
-        sns.lineplot(data=self.data.sum(axis=0))
+        ax_plot.set(xlabel=None, ylabel=None, title=f'{self.title}\n')
+        sns.lineplot(data=self.data.sum(axis=0) / self.data.shape[0])
 
 
 @click.command()
