@@ -120,7 +120,7 @@ class Collector(Hook):
             last_x, _ = self._road.getAbsolutePosition(vehicle.last_position)
             cur_x, lane = self._road.getAbsolutePosition(vehicle.position)
             value = 1. / (cur_x - last_x + 1)
-            for x in range(last_x, cur_x):
+            for x in range(last_x, cur_x + 1):
                 if x < self._road.length:
                     self.heat_map[lane][x] += value
 

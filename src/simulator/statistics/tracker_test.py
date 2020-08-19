@@ -4,6 +4,7 @@ import typing
 from unittest.mock import Mock
 
 from simulator.statistics.averageresult import AverageResult
+from simulator.statistics.filters import Filter
 from simulator.statistics.tracker import Tracker
 from simulator.vehicle.car import Car
 from simulator.vehicle.vehicle import Vehicle
@@ -50,6 +51,42 @@ class TrackerTestCase(unittest.TestCase):
         result = tracker._trackThroughput(isEven)
         self.assertEqual(result, 5)
 
+    def test_trackPercentage(self):
+        road = Mock()
+        vehicles: typing.List[Vehicle] = []
+        for x in range(100):
+            vehicles.append(Mock(position=(x, 0)))
+        road.getAllActiveVehicles = lambda: vehicles
+        tracker = Tracker(simulator=Mock(road=road))
+
+        def make_filter(xfilter: typing.Callable[[int], bool]) -> Filter:
+            def f(vehicle: Vehicle) -> bool:
+                x, _ = vehicle.position
+                return xfilter(x)
+
+            return f
+
+        no_filter = make_filter(lambda _: True)
+        x50_filter = make_filter(lambda x: x < 50)
+        x25_filter = make_filter(lambda x: x < 25)
+
+        # Check count working.
+        result = tracker._trackPercentage(x50_filter, no_filter)
+        expected = AverageResult(value=50, count=50)
+        self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))
+        # Check value working.
+        result = tracker._trackPercentage(no_filter, x50_filter)
+        expected = AverageResult(value=50, count=100)
+        self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))
+        # More potential count than values.
+        result = tracker._trackPercentage(x50_filter, x25_filter)
+        expected = AverageResult(value=25, count=50)
+        self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))
+        # More potential values than count.
+        result = tracker._trackPercentage(x25_filter, x50_filter)
+        expected = AverageResult(value=25, count=25)
+        self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))
+
     def test_trackDecelerations(self):
         road = Mock()
         vehicles: typing.List[Vehicle] = []
@@ -62,17 +99,20 @@ class TrackerTestCase(unittest.TestCase):
         tracker = Tracker(simulator=Mock(road=road))
         # No vehicles matching the predicate.
         result = tracker._trackDecelerations(lambda _: False)
-        self.assertEqual(0, result)
+        expected = AverageResult(value=0, count=0)
+        self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))
         # All vehicles matching the predicate.
         result = tracker._trackDecelerations(lambda _: True)
-        self.assertEqual(10, result)
+        expected = AverageResult(value=10, count=10)
+        self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))
 
         # Some vehicles matching the predicate.
         def isEven(vehicle: Vehicle) -> bool:
             return vehicle.velocity % 2 == 0
 
         result = tracker._trackDecelerations(isEven)
-        self.assertEqual(5, result)
+        expected = AverageResult(value=5, count=5)
+        self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))
 
         # Test decelerations filter.
         road = Mock()
@@ -98,7 +138,8 @@ class TrackerTestCase(unittest.TestCase):
         road.getAllActiveVehicles = lambda: vehicles
         tracker = Tracker(simulator=Mock(road=road))
         result = tracker._trackDecelerations(lambda _: True)
-        self.assertEqual(10, result)
+        expected = AverageResult(value=10, count=20)
+        self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))
 
     def test_trackLaneChanges(self):
         road = Mock()
@@ -112,10 +153,12 @@ class TrackerTestCase(unittest.TestCase):
         tracker = Tracker(simulator=Mock(road=road))
         # No vehicles matching the predicate.
         result = tracker._trackLaneChanges(lambda _: False)
-        self.assertEqual(0, result)
+        expected = AverageResult(value=0, count=0)
+        self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))
         # All vehicles matching the predicate.
         result = tracker._trackLaneChanges(lambda _: True)
-        self.assertEqual(10, result)
+        expected = AverageResult(value=10, count=10)
+        self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))
 
         # Some vehicles matching the predicate.
         def isEven(vehicle: Vehicle) -> bool:
@@ -123,7 +166,8 @@ class TrackerTestCase(unittest.TestCase):
             return x % 2 == 0
 
         result = tracker._trackLaneChanges(isEven)
-        self.assertEqual(5, result)
+        expected = AverageResult(value=5, count=5)
+        self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))
 
     def test_trackWaiting(self):
         road = Mock()
@@ -137,10 +181,12 @@ class TrackerTestCase(unittest.TestCase):
         tracker = Tracker(simulator=Mock(road=road))
         # No vehicles matching the predicate.
         result = tracker._trackWaiting(lambda _: False)
-        self.assertEqual(0, result)
+        expected = AverageResult(value=0, count=0)
+        self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))
         # All vehicles matching the predicate.
         result = tracker._trackWaiting(lambda _: True)
-        self.assertEqual(10, result)
+        expected = AverageResult(value=10, count=10)
+        self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))
 
         # Some vehicles matching the predicate.
         def isEven(vehicle: Vehicle) -> bool:
@@ -148,7 +194,8 @@ class TrackerTestCase(unittest.TestCase):
             return x % 2 == 0
 
         result = tracker._trackWaiting(isEven)
-        self.assertEqual(5, result)
+        expected = AverageResult(value=5, count=5)
+        self.assertEqual(result, expected, '{} != {}'.format(str(result), str(expected)))
 
 
 if __name__ == '__main__':

@@ -8,7 +8,7 @@ from simulator.simulator import Hook, Simulator
 from simulator.statistics.averageresult import AverageResult
 from simulator.statistics.filters import Filter, combine
 from simulator.statistics.vehicletype import VehicleType, getVehicleTypeFilter, getVehicleTypeName
-from simulator.vehicle.car import Car
+from simulator.vehicle.car import Car, isCar
 from simulator.vehicle.vehicle import Vehicle
 from util.cumulativelist import CumulativeList
 from util.dict import makeOrderedDict
@@ -18,9 +18,9 @@ class Tracker(Hook):
     steps: int
     velocity: typing.Dict[VehicleType, CumulativeList[AverageResult]]
     throughput: typing.Dict[VehicleType, CumulativeList[int]]
-    decelerations: typing.Dict[VehicleType, CumulativeList[int]]
-    lane_changes: typing.Dict[VehicleType, CumulativeList[int]]
-    waiting: typing.Dict[VehicleType, CumulativeList[int]]
+    decelerations: typing.Dict[VehicleType, CumulativeList[AverageResult]]
+    lane_changes: typing.Dict[VehicleType, CumulativeList[AverageResult]]
+    waiting: typing.Dict[VehicleType, CumulativeList[AverageResult]]
 
     def __init__(self, simulator: Simulator, buffer_size: int = 1):
         super().__init__(simulator=simulator)
@@ -33,9 +33,9 @@ class Tracker(Hook):
         for vehicle_type in VehicleType:
             self.velocity[vehicle_type] = CumulativeList(buffer_size, AverageResult(0, 0))
             self.throughput[vehicle_type] = CumulativeList(buffer_size, 0)
-            self.decelerations[vehicle_type] = CumulativeList(buffer_size, 0)
-            self.lane_changes[vehicle_type] = CumulativeList(buffer_size, 0)
-            self.waiting[vehicle_type] = CumulativeList(buffer_size, 0)
+            self.decelerations[vehicle_type] = CumulativeList(buffer_size, AverageResult(0, 0))
+            self.lane_changes[vehicle_type] = CumulativeList(buffer_size, AverageResult(0, 0))
+            self.waiting[vehicle_type] = CumulativeList(buffer_size, AverageResult(0, 0))
 
     @property
     def _road(self) -> Road:
@@ -67,37 +67,43 @@ class Tracker(Hook):
     def getAverageThroughput(self, vehicle_type: VehicleType) -> float:
         return self.throughput[vehicle_type].value() / len(self.throughput[vehicle_type])
 
-    def _trackDecelerations(self, predicate: Filter) -> int:
-        def isDeceleration(vehicle: Vehicle) -> bool:
-            if not isinstance(vehicle, Car):
-                return False
+    def _trackPercentage(self, count_filter: Filter, value_filter) -> AverageResult:
+        value, count = 0, 0
+        for vehicle in filter(count_filter, self._road.getAllActiveVehicles()):
+            if value_filter(vehicle):
+                value += 1
+            count += 1
+        return AverageResult(value=value, count=count)
+
+    def _trackDecelerations(self, predicate: Filter) -> AverageResult:
+        def isDeceleration(vehicle: Car) -> bool:
             _, last_velocity = vehicle.path[-1]
             return last_velocity - vehicle.velocity > 1
 
-        return ilen(filter(combine(predicate, isDeceleration), self._road.getAllActiveVehicles()))
+        return self._trackPercentage(combine(predicate, isCar), isDeceleration)
 
-    def getAverageDecelerations(self, vehicle_type: VehicleType) -> float:
-        return self.decelerations[vehicle_type].value() / len(self.decelerations[vehicle_type])
+    def getAverageDecelerations(self, vehicle_type: VehicleType) -> typing.Optional[float]:
+        return self.decelerations[vehicle_type].value().toMaybeFloat()
 
-    def _trackLaneChanges(self, predicate: Filter) -> int:
+    def _trackLaneChanges(self, predicate: Filter) -> AverageResult:
         def isLaneChange(vehicle: Vehicle) -> bool:
             _, last_lane = vehicle.last_position
             _, lane = vehicle.position
             return last_lane != lane
 
-        return ilen(filter(combine(predicate, isLaneChange), self._road.getAllActiveVehicles()))
+        return self._trackPercentage(predicate, isLaneChange)
 
-    def getAverageLaneChanges(self, vehicle_type: VehicleType) -> float:
-        return self.lane_changes[vehicle_type].value() / len(self.lane_changes[vehicle_type])
+    def getAverageLaneChanges(self, vehicle_type: VehicleType) -> typing.Optional[float]:
+        return self.lane_changes[vehicle_type].value().toMaybeFloat()
 
-    def _trackWaiting(self, predicate: Filter) -> int:
+    def _trackWaiting(self, predicate: Filter) -> AverageResult:
         def isWaiting(vehicle: Vehicle) -> bool:
             return vehicle.position == vehicle.last_position
 
-        return ilen(filter(combine(predicate, isWaiting), self._road.getAllActiveVehicles()))
+        return self._trackPercentage(predicate, isWaiting)
 
-    def getAverageWaiting(self, vehicle_type: VehicleType) -> float:
-        return self.waiting[vehicle_type].value() / len(self.waiting[vehicle_type])
+    def getAverageWaiting(self, vehicle_type: VehicleType) -> typing.Optional[float]:
+        return self.waiting[vehicle_type].value().toMaybeFloat()
 
     def getAverageData(self) -> pd.DataFrame:
         statistics = {}
