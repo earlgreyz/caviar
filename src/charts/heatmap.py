@@ -14,8 +14,14 @@ class HeatMap:
     title: str
     max_value: float
 
-    def __init__(self, data: HeatMapData, title: str, max_value: float):
-        self.data = pd.DataFrame(data=data)
+    def __init__(self, data: HeatMapData, title: str, max_value: float, skip: int = 0):
+        if skip > 0:
+            new_data = []
+            for lane in data:
+                new_data.append(lane[skip:-skip])
+        else:
+            new_data = data
+        self.data = pd.DataFrame(data=new_data)
         self.title = title
         self.max_value = max_value
 
@@ -35,7 +41,7 @@ class HeatMap:
             plt.savefig(plt_path, bbox_inches='tight')
 
     def _prepareChart(self) -> None:
-        sns.set_style('darkgrid')
+        sns.set(font='serif', style='white', rc={'text.usetex': True})
 
         # Set up the subplot grid
         f = plt.figure(figsize=(6, 4))
@@ -62,7 +68,9 @@ class HeatMap:
         ax_heatmap.set(ylabel='Lane')
 
         plt.sca(ax_plot)
-        ax_plot.set(xlabel=None, ylabel=None, title=f'{self.title}\n')
+        colors = sns.color_palette(['#000'])
+        sns.set_palette(colors)
+        ax_plot.set(xlabel=None, ylabel='Density ($\\frac{vehicles}{step}$)')
         sns.lineplot(data=self.data.sum(axis=0) / self.data.shape[0])
 
 
@@ -71,8 +79,9 @@ class HeatMap:
 @click.option('--ylim', '-y', default=1.0, help='Maximum value on the cumulative graph')
 @click.option('--output', '-o', default=None, help='Save output to a directory')
 @click.option('--prefix', '-p', default='', help='Prefix for output file names')
+@click.option('--skip', '-s', default=0, help='Skip first and last n cells')
 @click.argument('files', nargs=-1, type=click.File())
-def main(title: str, ylim: float, output: typing.Optional[str], prefix: str, files):
+def main(title: str, ylim: float, output: typing.Optional[str], prefix: str, skip: int, files):
     data = None
     if len(files) < 1:
         click.secho('Requires at least one data file', fg='red')
@@ -86,7 +95,7 @@ def main(title: str, ylim: float, output: typing.Optional[str], prefix: str, fil
             data = current
 
     data /= len(files)
-    heatmap = HeatMap(data.values.tolist(), title=title, max_value=ylim)
+    heatmap = HeatMap(data.values.tolist(), title=title, max_value=ylim, skip=skip)
     if output is not None:
         heatmap.save(output, prefix, only_data=False)
     else:
