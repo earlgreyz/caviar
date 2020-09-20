@@ -86,9 +86,13 @@ def command(ctx: click.Context, **kwargs) -> None:
 @click.option('--step', default=100, help='Animation time of a single simulation step (ms)')
 @click.option('--fps', default=30, help='Animation frames per second')
 @click.option('--buffer', default=1, help='Statistics buffer size')
+@click.option('--quiet', default=0, help='Number of steps to run quietly before gui')
 @click.pass_context
-def gui(ctx: click.Context, step: int, fps: int, buffer: int) -> None:
-    controller = GUIController(simulator=ctx.obj)
+def gui(ctx: click.Context, step: int, fps: int, buffer: int, quiet: int) -> None:
+    simulator: Simulator = ctx.obj
+    for _ in range(quiet):
+        simulator.step()
+    controller = GUIController(simulator=simulator)
     controller.run(speed=step, refresh=fps, buffer=buffer)
 
 
