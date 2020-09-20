@@ -3,6 +3,7 @@ from simulator.road.road import Road
 from simulator.vehicle.car import Car
 from simulator.vehicle.obstacle import Obstacle
 from simulator.vehicle.vehicle import Vehicle
+from util.rand import shuffled
 
 
 class AutonomousCar(Car):
@@ -35,7 +36,7 @@ class AutonomousCar(Car):
         # Find the best lane change.
         best_change = 0
         best_limit = self._getMaxSpeed(position=self.position)
-        for change in [-self.road.lane_width, self.road.lane_width]:
+        for change in shuffled([-self.road.lane_width, self.road.lane_width]):
             destination = (x, lane + change)
             if self._canAvoidObstacle(obstacle=vehicle, destination=destination):
                 limit = self._getMaxSpeed(position=destination)
@@ -54,7 +55,7 @@ class AutonomousCar(Car):
         x, lane = self.position
         best_change = 0
         best_limit = self._getMaxSpeed(position=self.position)
-        for change in [-self.road.lane_width, self.road.lane_width]:
+        for change in shuffled([-self.road.lane_width, self.road.lane_width]):
             destination = (x, lane + change)
             if self._canChangeLane(destination):
                 limit = self._getMaxSpeed(position=destination)
