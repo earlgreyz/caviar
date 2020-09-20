@@ -93,7 +93,7 @@ class Collector(Hook):
         self.throughput = [[0] * self._road.length for _ in range(self._road.lanes_count)]
 
     def _collectThroughput(self) -> None:
-        for vehicle in self._road.getAllActiveVehicles():
+        for vehicle in self._road.getAllVehicles():
             last_x, _ = self._road.getAbsolutePosition(vehicle.last_position)
             cur_x, lane = self._road.getAbsolutePosition(vehicle.position)
             for x in range(last_x, cur_x):
@@ -116,11 +116,13 @@ class Collector(Hook):
         self.heat_map = [[.0] * self._road.length for _ in range(self._road.lanes_count)]
 
     def _collectHeatMap(self) -> None:
-        for vehicle in self._road.getAllActiveVehicles():
+        for vehicle in self._road.getAllVehicles():
             last_x, _ = self._road.getAbsolutePosition(vehicle.last_position)
             cur_x, lane = self._road.getAbsolutePosition(vehicle.position)
             value = 1. / (cur_x - last_x + 1)
-            for x in range(last_x, cur_x + 1):
+            if cur_x == last_x:
+                self.heat_map[lane][cur_x] += 1.
+            for x in range(last_x, cur_x):
                 if x < self._road.length:
                     self.heat_map[lane][x] += value
 
