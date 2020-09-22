@@ -15,6 +15,9 @@ class CollectorTestCase(unittest.TestCase):
         self.assertIsNotNone(collector.velocity_conventional)
         self.assertIsNotNone(collector.throughput)
         self.assertIsNotNone(collector.heat_map)
+        self.assertIsNotNone(collector.travel)
+        self.assertIsNotNone(collector.travel_autonomous)
+        self.assertIsNotNone(collector.travel_conventional)
         collector = Collector(simulator=simulator, statistics=Statistics.VELOCITY)
         self.assertEqual(collector.statistics, Statistics.VELOCITY)
         self.assertIsNotNone(collector.velocity)
@@ -22,6 +25,9 @@ class CollectorTestCase(unittest.TestCase):
         self.assertIsNotNone(collector.velocity_conventional)
         self.assertFalse(hasattr(collector, 'throughput'))
         self.assertFalse(hasattr(collector, 'heat_map'))
+        self.assertFalse(hasattr(collector, 'travel'))
+        self.assertFalse(hasattr(collector, 'travel_autonomous'))
+        self.assertFalse(hasattr(collector, 'travel_conventional'))
         collector = Collector(simulator=simulator, statistics=Statistics.THROUGHPUT)
         self.assertEqual(collector.statistics, Statistics.THROUGHPUT)
         self.assertFalse(hasattr(collector, 'velocity'))
@@ -29,6 +35,9 @@ class CollectorTestCase(unittest.TestCase):
         self.assertFalse(hasattr(collector, 'velocity_conventional'))
         self.assertIsNotNone(collector.throughput)
         self.assertFalse(hasattr(collector, 'heat_map'))
+        self.assertFalse(hasattr(collector, 'travel'))
+        self.assertFalse(hasattr(collector, 'travel_autonomous'))
+        self.assertFalse(hasattr(collector, 'travel_conventional'))
         collector = Collector(simulator=simulator, statistics=Statistics.HEAT_MAP)
         self.assertEqual(collector.statistics, Statistics.HEAT_MAP)
         self.assertFalse(hasattr(collector, 'velocity'))
@@ -36,6 +45,19 @@ class CollectorTestCase(unittest.TestCase):
         self.assertFalse(hasattr(collector, 'velocity_conventional'))
         self.assertFalse(hasattr(collector, 'throughput'))
         self.assertIsNotNone(collector.heat_map)
+        self.assertFalse(hasattr(collector, 'travel'))
+        self.assertFalse(hasattr(collector, 'travel_autonomous'))
+        self.assertFalse(hasattr(collector, 'travel_conventional'))
+        collector = Collector(simulator=simulator, statistics=Statistics.TRAVEL_TIME)
+        self.assertEqual(collector.statistics, Statistics.TRAVEL_TIME)
+        self.assertFalse(hasattr(collector, 'velocity'))
+        self.assertFalse(hasattr(collector, 'velocity_autonomous'))
+        self.assertFalse(hasattr(collector, 'velocity_conventional'))
+        self.assertFalse(hasattr(collector, 'throughput'))
+        self.assertFalse(hasattr(collector, 'heat_map'))
+        self.assertIsNotNone(collector.travel)
+        self.assertIsNotNone(collector.travel_autonomous)
+        self.assertIsNotNone(collector.travel_conventional)
 
     def test_run(self):
         simulator = Mock()
@@ -45,12 +67,14 @@ class CollectorTestCase(unittest.TestCase):
             collector._collectVelocity = Mock()
             collector._collectThroughput = Mock()
             collector._collectHeatMap = Mock()
+            collector._collectTravelTime = Mock()
             return collector
 
         def collect_mock_reset(collector: Collector) -> None:
             collector._collectThroughput.reset_mock()
             collector._collectVelocity.reset_mock()
             collector._collectHeatMap.reset_mock()
+            collector._collectTravelTime.reset_mock()
 
         # Test all statistics.
         collector = mock_collect(Collector(simulator=simulator))
@@ -61,6 +85,7 @@ class CollectorTestCase(unittest.TestCase):
             collector._collectVelocity.assert_called_once()
             collector._collectThroughput.assert_called_once()
             collector._collectHeatMap.assert_called_once()
+            collector._collectTravelTime.assert_called_once()
         # Test skip.
         collector = mock_collect(Collector(simulator=simulator, skip=10))
         for i in range(1, 11):
@@ -70,6 +95,7 @@ class CollectorTestCase(unittest.TestCase):
             collector._collectVelocity.assert_not_called()
             collector._collectThroughput.assert_not_called()
             collector._collectHeatMap.assert_not_called()
+            collector._collectTravelTime.assert_not_called()
         for i in range(11, 100):
             collect_mock_reset(collector)
             collector.run()
@@ -77,6 +103,7 @@ class CollectorTestCase(unittest.TestCase):
             collector._collectVelocity.assert_called_once()
             collector._collectThroughput.assert_called_once()
             collector._collectHeatMap.assert_called_once()
+            collector._collectTravelTime.assert_called_once()
         # Test individual statisrics not gathered.
         collector = mock_collect(Collector(simulator=simulator, statistics=Statistics.VELOCITY))
         for i in range(1, 100):
@@ -86,6 +113,7 @@ class CollectorTestCase(unittest.TestCase):
             collector._collectVelocity.assert_called_once()
             collector._collectThroughput.assert_not_called()
             collector._collectHeatMap.assert_not_called()
+            collector._collectTravelTime.assert_not_called()
         collector = mock_collect(Collector(simulator=simulator, statistics=Statistics.THROUGHPUT))
         for i in range(1, 100):
             collect_mock_reset(collector)
@@ -94,6 +122,7 @@ class CollectorTestCase(unittest.TestCase):
             collector._collectVelocity.assert_not_called()
             collector._collectThroughput.assert_called_once()
             collector._collectHeatMap.assert_not_called()
+            collector._collectTravelTime.assert_not_called()
         collector = mock_collect(Collector(simulator=simulator, statistics=Statistics.HEAT_MAP))
         for i in range(1, 100):
             collect_mock_reset(collector)
@@ -102,6 +131,17 @@ class CollectorTestCase(unittest.TestCase):
             collector._collectVelocity.assert_not_called()
             collector._collectThroughput.assert_not_called()
             collector._collectHeatMap.assert_called_once()
+            collector._collectTravelTime.assert_not_called()
+
+        collector = mock_collect(Collector(simulator=simulator, statistics=Statistics.TRAVEL_TIME))
+        for i in range(1, 100):
+            collect_mock_reset(collector)
+            collector.run()
+            self.assertEqual(i, collector.steps)
+            collector._collectVelocity.assert_not_called()
+            collector._collectThroughput.assert_not_called()
+            collector._collectHeatMap.assert_not_called()
+            collector._collectTravelTime.assert_called_once()
 
     def test_road(self):
         road = Mock()

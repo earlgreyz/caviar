@@ -38,7 +38,7 @@ class DispatcherTestCase(unittest.TestCase):
         vehicle = Mock()
         dispatcher._newVehicle = Mock(return_value=vehicle)
         mocked_random.return_value = 0
-        dispatcher.dispatch()
+        dispatcher.dispatch(step=0)
         road.canPlaceVehicle.assert_not_called()
         road.addVehicle.assert_not_called()
         self.assertEqual(dispatcher.remaining, 0)
@@ -46,7 +46,7 @@ class DispatcherTestCase(unittest.TestCase):
         # Check no vehicles added if all lanes are taken.
         road.reset_mock()
         mocked_random.return_value = 1
-        dispatcher.dispatch()
+        dispatcher.dispatch(step=0)
         road.canPlaceVehicle.assert_called()
         road.addVehicle.assert_not_called()
         self.assertEqual(dispatcher.remaining, 1)
@@ -63,11 +63,12 @@ class DispatcherTestCase(unittest.TestCase):
 
         dispatcher._newVehicle = mock_newVehicle
         mocked_random.return_value = 0
-        dispatcher.dispatch()
+        dispatcher.dispatch(step=42)
         road.canPlaceVehicle.assert_called_with(vehicle=vehicle)
         road.addVehicle.assert_called_with(vehicle=vehicle)
         self.assertEqual(vehicle.position, (0, 0))
         self.assertEqual(dispatcher.remaining, 0)
+        vehicle.setStatistics.assert_called_once_with(start=42)
 
     @patch('random.randint')
     def test_dispatch__width(self, mocked_random):
@@ -99,7 +100,7 @@ class DispatcherTestCase(unittest.TestCase):
 
         # With N=20 the probability of passing an error is lower than 1e-10.
         for _ in range(20):
-            dispatcher.dispatch()
+            dispatcher.dispatch(step=0)
             x, lane = vehicle.position
             self.assertIn(lane, [1, 3], msg='vehicle dispatched between lanes')
             self.assertEqual(x, 0)
@@ -120,11 +121,12 @@ class DispatcherTestCase(unittest.TestCase):
             return vehicle
 
         dispatcher._newVehicle = mock_newVehicle
-        dispatcher.dispatch()
+        dispatcher.dispatch(step=42)
         road.canPlaceVehicle.assert_called_with(vehicle=vehicle)
         road.addVehicle.assert_called_with(vehicle=vehicle)
         self.assertEqual(vehicle.position, (1, 0))
-        self.assertEqual(dispatcher.remaining, 0, )
+        vehicle.setStatistics.assert_called_once_with(start=42)
+        self.assertEqual(dispatcher.remaining, 0)
 
         road.reset_mock()
 
@@ -137,11 +139,12 @@ class DispatcherTestCase(unittest.TestCase):
             return vehicle
 
         dispatcher._newVehicle = mock_newVehicle
-        dispatcher.dispatch()
+        dispatcher.dispatch(step=42)
         road.canPlaceVehicle.assert_called_with(vehicle=vehicle)
         road.addVehicle.assert_called_with(vehicle=vehicle)
         self.assertEqual(vehicle.position, (3, 0))
-        self.assertEqual(dispatcher.remaining, 0, )
+        vehicle.setStatistics.assert_called_once_with(start=42)
+        self.assertEqual(dispatcher.remaining, 0)
 
 
 if __name__ == '__main__':
