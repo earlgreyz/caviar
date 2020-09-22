@@ -18,7 +18,7 @@ class Dispatcher:
         self.remaining = 0
         self.length = length
 
-    def dispatch(self) -> None:
+    def dispatch(self, step: int) -> None:
         '''
         Adds vehicles to the road.
         :return: None.
@@ -30,6 +30,7 @@ class Dispatcher:
             # Check if position is not occupied.
             position = self.road.getRelativePosition(position=(self.length - 1, lane))
             vehicle = self._newVehicle(position=position)
+            vehicle.setStatistics(start=step)
             if not self.road.canPlaceVehicle(vehicle=vehicle):
                 continue
             # Add the vehicle.

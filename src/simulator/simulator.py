@@ -44,6 +44,8 @@ class Simulator:
             for x in range(self.road.length):
                 position = self.road.getRelativePosition(position=(x, lane))
                 vehicle = self.dispatcher._newVehicle(position=position)
+                # Set start to negative value to indicate a vehicle was scattered.
+                vehicle.setStatistics(start=-1)
                 if self.road.canPlaceVehicle(vehicle=vehicle) and random.random() < density:
                     self.road.addVehicle(vehicle=vehicle)
 
@@ -52,7 +54,7 @@ class Simulator:
         Performs a single step of the simulation.
         :return: None.
         '''
-        self.dispatcher.dispatch()
+        self.dispatcher.dispatch(step=self.steps)
         self.road.step()
         self.steps += 1
         for hook in self.hooks:

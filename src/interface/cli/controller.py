@@ -2,8 +2,11 @@ import os
 import typing
 import click
 
+import pandas as pd
+
 from charts.heatmap import HeatMap
 from charts.velocity import VelocityChart
+from charts.travel import TravelHistogram
 
 from simulator.simulator import Simulator
 from simulator.statistics.averageresult import AverageResult
@@ -72,6 +75,27 @@ class Controller:
                     velocity.save(path=output, prefix=f'{prefix}_speed', only_data=no_charts)
                 else:
                     velocity.show(only_data=no_charts)
+
+            if statistics & Statistics.TRAVEL_TIME:
+                click.secho('Generating travel time histogram', fg='blue')
+
+                df = pd.DataFrame(columns=['x', 'y', 'type'])
+                n = sum(collector.travel)
+                na = sum(collector.travel_autonomous)
+                nc = sum(collector.travel_conventional)
+                for i in range(collector._travelLimit):
+                    df = df.append({'x': i, 'y': collector.travel[i] / n * 100,
+                                    'type': 'All'}, ignore_index=True)
+                    df = df.append({'x': i, 'y': collector.travel_autonomous[i] / na * 100,
+                                    'type': 'Autonomous'}, ignore_index=True)
+                    df = df.append({'x': i, 'y': collector.travel_conventional[i] / nc * 100,
+                                    'type': 'Conventional'}, ignore_index=True)
+
+                travel = TravelHistogram(data=df)
+                if output is not None:
+                    travel.save(path=output, prefix=prefix, only_data=no_charts)
+                else:
+                    travel.show(only_data=no_charts)
 
             click.secho('Generating average statistics', fg='blue')
             data = tracker.getAverageData()

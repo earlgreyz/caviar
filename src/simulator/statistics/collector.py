@@ -15,6 +15,7 @@ class Statistics(enum.Flag):
     VELOCITY = enum.auto()
     THROUGHPUT = enum.auto()
     HEAT_MAP = enum.auto()
+    TRAVEL_TIME = enum.auto()
 
 
 class Collector(Hook):
@@ -33,6 +34,11 @@ class Collector(Hook):
     # Heat map statistics buffers.
     heat_map: typing.List[typing.List[float]]
 
+    # Travel time buffers.
+    travel: typing.List[int]
+    travel_autonomous: typing.List[int]
+    travel_conventional: typing.List[int]
+
     def __init__(self, simulator: Simulator, statistics: Statistics = Statistics.ALL,
                  skip: int = 0):
         super().__init__(simulator=simulator)
@@ -46,6 +52,8 @@ class Collector(Hook):
             self._initThroughput()
         if self.statistics & Statistics.HEAT_MAP:
             self._initHeatMap()
+        if self.statistics & Statistics.TRAVEL_TIME:
+            self._initTravelTime()
 
     def run(self) -> None:
         self.steps += 1
@@ -58,10 +66,16 @@ class Collector(Hook):
             self._collectThroughput()
         if self.statistics & Statistics.HEAT_MAP:
             self._collectHeatMap()
+        if self.statistics & Statistics.TRAVEL_TIME:
+            self._collectTravelTime()
 
     @property
     def _road(self) -> Road:
         return self.simulator.road
+
+    @property
+    def _travelLimit(self) -> int:
+        return self._road.length * 2
 
     def _initVelocity(self):
         self.velocity = \
@@ -137,3 +151,18 @@ class Collector(Hook):
             for x in range(self._road.length):
                 heat_map[lane][x] = self.heat_map[lane][x] / N
         return heat_map
+
+    def _initTravelTime(self) -> None:
+        self.travel = [0] * self._travelLimit
+        self.travel_autonomous = [0] * self._travelLimit
+        self.travel_conventional = [0] * self._travelLimit
+
+    def _collectTravelTime(self) -> None:
+        for vehicle in self._road.removed:
+            time = min(self.simulator.steps - vehicle.start, self._travelLimit - 1)
+            if isCar(vehicle):
+                self.travel[time] += 1
+            if isAutonomous(vehicle):
+                self.travel_autonomous[time] += 1
+            if isConventional(vehicle):
+                self.travel_conventional[time] += 1

@@ -20,6 +20,9 @@ class Vehicle:
     last_position: Position
     flags: VehicleFlags
 
+    # Statistics purposes.
+    start: int
+
     def __init__(self, position: Position, velocity: int = 0, length: int = 1, width: int = 1):
         self.position = position
         self.velocity = velocity
@@ -41,3 +44,11 @@ class Vehicle:
         :return: new position.
         '''
         raise NotImplementedError
+
+    def setStatistics(self, start: int) -> None:
+        '''
+        Set parameters for statistics purposes.
+        :param start: starting step.
+        :return: None.
+        '''
+        self.start = start

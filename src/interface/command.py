@@ -109,9 +109,10 @@ def gui(ctx: click.Context, step: int, fps: int, buffer: int, quiet: int) -> Non
 @click.option('--velocity', is_flag=True, help='Toggle velocity statistics')
 @click.option('--heatmap', is_flag=True, help='Toggle heatmap statistics')
 @click.option('--throughput', is_flag=True, help='Toggle throughput statistics')
+@click.option('--travel', is_flag=True, help='Toggle travel time statistics')
 @click.pass_context
 def cli(ctx: click.Context, all_statistics: bool, velocity: bool, heatmap: bool, throughput: bool,
-        **kwargs):
+        travel: bool, **kwargs):
     controller = CLIController(simulator=ctx.obj)
     statistics = Statistics.ALL if all_statistics else Statistics.NONE
     if velocity:
@@ -120,4 +121,6 @@ def cli(ctx: click.Context, all_statistics: bool, velocity: bool, heatmap: bool,
         statistics ^= statistics.HEAT_MAP
     if throughput:
         statistics ^= statistics.THROUGHPUT
+    if travel:
+        statistics ^= statistics.TRAVEL_TIME
     controller.run(statistics=statistics, **kwargs)
