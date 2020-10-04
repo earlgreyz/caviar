@@ -7,7 +7,7 @@ import matplotlib.pylab as plt
 import typing
 
 
-def make_plot(df: pd.DataFrame, key: str, title: str, ylabel: str, multiplier: int,
+def make_plot(df: pd.DataFrame, key: str, ylabel: str, multiplier: int, ylim: int,
               output, prefix) -> None:
     # Prepare data.
     key_all = f'{key}_all'
@@ -25,12 +25,12 @@ def make_plot(df: pd.DataFrame, key: str, title: str, ylabel: str, multiplier: i
     data = data_all.append(data_conventional).append(data_autonomous)
     data['y'] *= multiplier
     # Make plot.
-    sns.set_style('darkgrid')
+    sns.set_style('white')
     f = plt.figure(figsize=(6, 4))
     f.tight_layout()
     g = sns.lineplot(x='x', y='y', hue='type', data=data)
     # Set axis title.
-    g.set(xlabel='Market Penetration Rate', ylabel=ylabel, title=f'{title}\n')
+    g.set(xlabel='Market Penetration Rate (%)', ylabel=ylabel, ylim=(0., ylim))  # noqa: W605
     # Remove legend title.
     handles, labels = g.get_legend_handles_labels()
     g.legend(handles=handles[1:], labels=labels[1:])
@@ -49,16 +49,17 @@ def make_plot(df: pd.DataFrame, key: str, title: str, ylabel: str, multiplier: i
 def main(output: typing.Optional[str], prefix: str, file):
     df = pd.read_csv(file, header=0)
     keys = ['velocity', 'throughput', 'decelerations', 'laneChanges', 'waiting']
-    titles = ['Average speed',
-              'Average Throughput per Step',
-              'Average Percentage of Quick Decelerations',
-              'Average Percentage of Lane Changes',
-              'Average Percentage of Waiting Vehicles']
-    ylabels = ['Speed', 'Throughput / Step', 'Decelerations (%)',
-               'Lane Changes (%)', 'Waiting Vehicles (%)']
+    ylabels = [
+        'Speed (sites/step)',  # noqa: W605
+        'Throughput (vehicles/step)',  # noqa: W605
+        'Quick Decelerations (vehicles%/step)',  # noqa: W605
+        'Lane Changes (vehicles%/step)',  # noqa: W605
+        'Waiting Vehicles (vehicles%/step)'  # noqa: W605
+    ]
     multipliers = [1, 1, 100, 100, 100]
-    for key, title, ylabel, multiplier in zip(keys, titles, ylabels, multipliers):
-        make_plot(df, key, title, ylabel, multiplier, output, prefix)
+    ylims = [5.5, 3.5, 6.5, 3, 60]
+    for key, ylabel, multiplier, ylim in zip(keys, ylabels, multipliers, ylims):
+        make_plot(df, key, ylabel, multiplier, ylim, output, prefix)
 
 
 if __name__ == '__main__':

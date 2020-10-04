@@ -14,11 +14,21 @@ class TravelHistogram:
         self.data = data
 
     def _prepareChart(self):
-        sns.set(font='serif', style='white', rc={'text.usetex': True})
+        # Do not use LaTeX if NO_LATEX variable is set.
+        no_latex = bool(os.getenv('NO_LATEX', False))
+        params = dict(font='serif', style='white')
+        if not no_latex:
+            params['rc'] = {'text.usetex': True}
+        sns.set(**params)
+
         f = plt.figure(figsize=(6, 4))
         f.tight_layout()
         g = sns.lineplot(x='x', y='y', hue='type', data=self.data)
-        g.set(xlabel='Steps', ylabel='Vehicles (\%)')  # noqa: W605
+        if not no_latex:
+            ylabel = 'Vehicles (\%)'  # noqa: W605
+        else:
+            ylabel = 'Vehicles (%)'
+        g.set(xlabel='Steps', ylabel=ylabel)
         handles, labels = g.get_legend_handles_labels()
         # Remove legend title.
         g.legend(handles=handles[1:], labels=labels[1:])

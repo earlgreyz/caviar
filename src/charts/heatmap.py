@@ -41,7 +41,12 @@ class HeatMap:
             plt.savefig(plt_path, bbox_inches='tight')
 
     def _prepareChart(self) -> None:
-        sns.set(font='serif', style='white', rc={'text.usetex': True})
+        # Do not use LaTeX if NO_LATEX variable is set.
+        no_latex = bool(os.getenv('NO_LATEX', False))
+        params = dict(font='serif', style='white')
+        if not no_latex:
+            params['rc'] = {'text.usetex': True}
+        sns.set(**params)
 
         # Set up the subplot grid
         f = plt.figure(figsize=(6, 4))
@@ -70,7 +75,11 @@ class HeatMap:
         plt.sca(ax_plot)
         colors = sns.color_palette(['#000'])
         sns.set_palette(colors)
-        ax_plot.set(xlabel=None, ylabel='Density ($\\frac{vehicles}{step}$)')
+        if not no_latex:
+            ylabel = 'Density ($\\frac{vehicles}{step}$)'
+        else:
+            ylabel = 'Density (vehicles/step)'
+        ax_plot.set(xlabel=None, ylabel=ylabel)
         sns.lineplot(data=self.data.sum(axis=0) / self.data.shape[0])
 
 
