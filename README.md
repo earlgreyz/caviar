@@ -1,4 +1,4 @@
-# Connected Autonomic Vehicles Simulator
+# Connected and Autonomous Vehicles Simulator
 ![unittest](https://github.com/earlgreyz/caviar/workflows/unittest/badge.svg)
 [![codecov](https://codecov.io/gh/earlgreyz/caviar/branch/master/graph/badge.svg?token=8CCDT357DL)](https://codecov.io/gh/earlgreyz/caviar)
 
