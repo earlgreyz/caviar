@@ -35,6 +35,10 @@ class ConventionalCar(Car):
         self.driver = driver if driver is not None else Driver()
 
     def move(self) -> Position:
+        # Don't move if the vehicle is not fully on a single lane.
+        if not self.road.isSingleLane(self):
+            return self.position
+
         x, lane = self.position
         if self.velocity > 0 and random.random() < self.driver.slow:
             self.velocity -= 1
@@ -57,10 +61,7 @@ class ConventionalCar(Car):
             return False
         # Try to switch lanes in random order.
         for change in shuffled([-self.road.lane_width, self.road.lane_width]):
-            destination = (x, lane + change)
-            if self._canAvoidObstacle(obstacle=vehicle, destination=destination):
-                self._avoidObstacle(obstacle=vehicle, destination=destination)
-                self.position = destination
+            if self._tryAvoidWithChange(obstacle=vehicle, change=change):
                 return True
         return False
 
@@ -80,9 +81,44 @@ class ConventionalCar(Car):
                 return True
         return False
 
+    def _tryChangeEmergency(self) -> bool:
+        emergency = self._getEmergency()
+        changeValue = self.road.lane_width // 2
+        # If there is no emergency or already avoiding the emergency, continue.
+        if emergency is None:
+            if self.road.isSingleLane(self):
+                return False
+            else:
+                _, absoluteLane = self.road.getAbsolutePosition(self.position)
+                change = changeValue if absoluteLane == -1 else -changeValue
+                # When coming back always get priority.
+                return self._tryAvoidWithChange(Obstacle((-1, -1), 0, 0), change)
+
+        # If already creating emergency corridor don't move.
+        if not self.road.isSingleLane(self):
+            return True
+        # Decelerate slowly, cannot switch lanes when the speed is too high.
+        self.velocity = max(1, self.velocity - 1)
+        if self.velocity > 2:
+            return True
+        # Destination lane depends on the road position.
+        _, absoluteLane = self.road.getAbsolutePosition(self.position)
+        change = -changeValue if absoluteLane == 0 else changeValue
+        self._tryAvoidWithChange(emergency, change)
+        return True
+
+    def _tryAvoidWithChange(self, obstacle: Vehicle, change: int) -> bool:
+        x, lane = self.position
+        destination = (x, lane + change)
+        if self._canAvoid(obstacle=obstacle, destination=destination):
+            self._avoid(obstacle=obstacle, destination=destination)
+            self.position = destination
+            return True
+        return False
+
     def _canChangeLane(self, destination: Position, force: bool = False) -> bool:
         change_lane = super()._canChangeLane(destination=destination, force=force)
-        return random.random() < self.driver.change and change_lane
+        return change_lane and random.random() < self.driver.change
 
 
 def isConventional(vehicle: Vehicle) -> bool:

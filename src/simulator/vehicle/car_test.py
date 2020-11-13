@@ -136,12 +136,12 @@ class CarTestCase(unittest.TestCase):
         # No space on a nearby lane.
         car = Car(position=(0, 0), velocity=1, road=Mock())
         car._isChangePossible = Mock(return_value=False)
-        self.assertFalse(car._canAvoidObstacle(obstacle=Mock(), destination=(0, 1)))
+        self.assertFalse(car._canAvoid(obstacle=Mock(), destination=(0, 1)))
         # No nearby vehicles on the destination lane.
         car = Car(position=(0, 0), velocity=1, road=Mock())
         car._isChangePossible = Mock(return_value=True)
         car._isChangeSafe = Mock(return_value=True)
-        self.assertTrue(car._canAvoidObstacle(obstacle=Mock(), destination=(0, 1)))
+        self.assertTrue(car._canAvoid(obstacle=Mock(), destination=(0, 1)))
         # Vehicle on the destination lane is a car willing to zip.
         road = Mock()
         other = Car(position=(0, 1), velocity=1, road=road)
@@ -151,7 +151,7 @@ class CarTestCase(unittest.TestCase):
         car._isChangeSafe = Mock(return_value=False)
         obstacle = Mock()
         self.assertNotIn(obstacle, other.zipped)
-        self.assertTrue(car._canAvoidObstacle(obstacle=obstacle, destination=(1, 1)))
+        self.assertTrue(car._canAvoid(obstacle=obstacle, destination=(1, 1)))
         # Vehicle on the destination lane is a static obstacle.
         road = Mock()
         other = Obstacle(position=(0, 1), length=1, width=1)
@@ -159,7 +159,7 @@ class CarTestCase(unittest.TestCase):
         car = Car(position=(1, 0), velocity=1, road=road)
         car._isChangePossible = Mock(return_value=True)
         car._isChangeSafe = Mock(return_value=False)
-        self.assertTrue(car._canAvoidObstacle(obstacle=obstacle, destination=(1, 1)))
+        self.assertTrue(car._canAvoid(obstacle=obstacle, destination=(1, 1)))
         # Vehicle on the destination lane is a car not willing to zip.
         road = Mock()
         other = Car(position=(0, 1), velocity=1, road=road)
@@ -169,7 +169,7 @@ class CarTestCase(unittest.TestCase):
         car._isChangeSafe = Mock(return_value=False)
         obstacle = Mock()
         other.zipped = {obstacle}
-        self.assertFalse(car._canAvoidObstacle(obstacle=obstacle, destination=(1, 1)))
+        self.assertFalse(car._canAvoid(obstacle=obstacle, destination=(1, 1)))
 
     def test_avoidObstacle(self):
         # No flags set for vehicles far away.
@@ -179,7 +179,7 @@ class CarTestCase(unittest.TestCase):
         car = Car(position=(1, 0), velocity=1, road=road)
         car._isChangeSafe = Mock(return_value=True)
         obstacle = Mock()
-        car._avoidObstacle(obstacle=obstacle, destination=(1, 1))
+        car._avoid(obstacle=obstacle, destination=(1, 1))
         self.assertNotIn(obstacle, other.zipped)
         # Obstacle added to zipped list when vehicle is close.
         road = Mock()
@@ -188,7 +188,7 @@ class CarTestCase(unittest.TestCase):
         car = Car(position=(1, 0), velocity=1, road=road)
         car._isChangeSafe = Mock(return_value=False)
         obstacle = Mock()
-        car._avoidObstacle(obstacle=obstacle, destination=(1, 1))
+        car._avoid(obstacle=obstacle, destination=(1, 1))
         self.assertIn(obstacle, other.zipped)
 
     def test_beforeMove(self):

@@ -8,7 +8,7 @@ from interface.obstacle import ObstacleParamType, ObstacleValue, addObstacle
 from interface.gui.controller import Controller as GUIController
 from interface.cli.controller import Controller as CLIController
 
-from simulator.dispatcher.mixed import MixedDispatcher
+from simulator.dispatcher.emergency import EmergencyDispatcher
 from simulator.road.dense import DenseRoad
 from simulator.road.speedcontroller import SpeedController
 from simulator.simulator import Simulator
@@ -35,6 +35,7 @@ def configProvider(file_path: str, cmd: str) -> typing.Dict[str, typing.Any]:
 @click.option('--dispatch', default=6, help='Maximum number of cars dispatched each step')
 @click.option('--penetration', default=.5, help='Penetration rate of CAV')
 @click.option('--car-length', default=1, help='Number of cells occupied by a single car')
+@click.option('--emergency', default=0, help='Emergency vehicle dispatch rate')
 # Driver options.
 @click.option('--pslow', default=.2, help='Probability a NS-model car will slow down')
 @click.option('--pchange', default=.5, help='Probability a NS-model car will change a lane')
@@ -55,6 +56,7 @@ def command(ctx: click.Context, **kwargs) -> None:
     dispatch: int = kwargs['dispatch']
     penetration: float = kwargs['penetration']
     car_length: int = kwargs['car_length']
+    emergency: int = kwargs['emergency']
     pslow: float = kwargs['pslow']
     pchange: float = kwargs['pchange']
     symmetry: bool = kwargs['symmetry']
@@ -73,9 +75,9 @@ def command(ctx: click.Context, **kwargs) -> None:
         addObstacle(road=road, obstacle=obstacle)
     # Create the dispatcher.
     driver = Driver(slow=pslow, change=pchange, symmetry=symmetry)
-    dispatcher = MixedDispatcher(
+    dispatcher = EmergencyDispatcher(
         count=dispatch, road=road, penetration=penetration,
-        driver=driver, length=car_length, limit=limit)
+        driver=driver, length=car_length, limit=limit, emergency_rate=emergency)
     # Create the simulator and scatter vehicles.
     simulator = Simulator(road=road, dispatcher=dispatcher)
     simulator.scatterVehicles(density=density)

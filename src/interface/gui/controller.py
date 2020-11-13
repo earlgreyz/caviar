@@ -2,6 +2,7 @@ import contextlib
 
 # Suppress the pygame welcome message.
 from simulator.statistics.vehicletype import VehicleType
+from simulator.vehicle.emergency import EmergencyCar
 
 with contextlib.redirect_stdout(None):
     import pygame
@@ -93,6 +94,8 @@ class Controller:
         limit = self.simulator.road.controller.getMaxSpeed(vehicle.position, width=vehicle.width)
         if isinstance(vehicle, AutonomousCar):
             start, end = Colors.PURPLE, Colors.BLUE
+        elif isinstance(vehicle, EmergencyCar):
+            start, end = Colors.WHITE, Colors.BLACK
         elif isinstance(vehicle, Car):
             start, end = Colors.RED, Colors.GREEN
         else:

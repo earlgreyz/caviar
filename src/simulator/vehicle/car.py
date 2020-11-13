@@ -7,13 +7,16 @@ from simulator.vehicle.vehicle import Vehicle
 
 
 class Car(Vehicle):
+    # Constants.
+    EMERGENCY_RADIUS = 10
+
     # Car properties.
     road: Road
     limit: int
 
     # Runtime properties.
     path: typing.List[typing.Tuple[Position, int]]
-    zipped: typing.Set[Obstacle]
+    zipped: typing.Set[Vehicle]
 
     def __init__(self, position: Position, velocity: int, road: Road,
                  length: int = 1, width: int = 1, limit: int = 0):
@@ -64,7 +67,7 @@ class Car(Vehicle):
         :return: if it is possible to change the lane.
         '''
         x, lane = destination
-        return all(self.road.isSafePosition(position=(x - i, lane + w))
+        return all(self.road.isSafePosition(position=(x - i, lane + w), ignore=self)
                    for i in range(self.length) for w in range(self.width))
 
     def _isChangeRequired(self) -> bool:
@@ -118,7 +121,7 @@ class Car(Vehicle):
             self._isChangeBeneficial(destination=destination) and \
             self._isChangeSafe(destination=destination)
 
-    def _canAvoidObstacle(self, obstacle: Obstacle, destination: Position) -> bool:
+    def _canAvoid(self, obstacle: Vehicle, destination: Position) -> bool:
         '''
         Returns whether it is possible to change the lane to destination, avoiding an obstacle
         and zipping in front of another vehicle.
@@ -136,18 +139,18 @@ class Car(Vehicle):
         _, vehicle = self.road.getPreviousVehicle(position=destination)
         if vehicle is None:
             return True
-
         if isinstance(vehicle, Car):
-            return obstacle not in vehicle.zipped
+            return not self.road.isSingleLane(vehicle) \
+                   or obstacle not in vehicle.zipped
         elif isinstance(vehicle, Obstacle):
             return True
 
         # In case new vehicle types get added make sure we remember to add it here.
         assert False, 'unreachable'
 
-    def _avoidObstacle(self, obstacle: Obstacle, destination: Position) -> None:
+    def _avoid(self, obstacle: Vehicle, destination: Position) -> None:
         '''
-        Avoid given obstacle by changing lane to the destination lane.
+        Avoid given obstacle or vehicle by changing lane to the destination lane.
         :param obstacle: obstacle to avoid.
         :param destination: destination to change to.
         :return: None.
@@ -176,11 +179,36 @@ class Car(Vehicle):
         '''
         raise NotImplementedError()
 
+    def _tryChangeEmergency(self) -> bool:
+        '''
+        Tries to change a lane to make space for an emergency vehicle.
+        :return: whether a lane was changed.
+        '''
+        raise NotImplementedError()
+
+    def _getEmergency(self) -> typing.Optional[Vehicle]:
+        '''
+        Checks if an emergency vehicle is approaching.
+        :return: whether an emergency vehicle is approaching.
+        '''
+        x, _ = self.position
+        for emergency in self.road.emergency:
+            ex, _ = emergency.position
+            if abs(x - ex) < Car.EMERGENCY_RADIUS:
+                return emergency
+        return None
+
     def beforeMove(self) -> Position:
         self.path.append((self.position, self.velocity))
         self.last_position = self.position
-        if not self._tryAvoidObstacle():
-            self._tryChangeLanes()
+        changes = [
+            lambda: self._tryAvoidObstacle(),
+            lambda: self._tryChangeEmergency(),
+            lambda: self._tryChangeLanes(),
+        ]
+        for tryChange in changes:
+            if tryChange():
+                break
         return self.position
 
 

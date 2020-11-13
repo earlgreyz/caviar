@@ -13,13 +13,6 @@ class AutonomousCar(Car):
             position=position, velocity=velocity, road=road,
             length=length, width=width, limit=limit)
 
-    def beforeMove(self) -> Position:
-        self.path.append((self.position, self.velocity))
-        self.last_position = self.position
-        if not self._tryAvoidObstacle():
-            self._tryChangeLanes()
-        return self.position
-
     def move(self) -> Position:
         x, lane = self.position
         self.velocity = min(self.velocity + 1, self._getMaxSpeed(position=self.position))
@@ -38,14 +31,14 @@ class AutonomousCar(Car):
         best_limit = self._getMaxSpeed(position=self.position)
         for change in shuffled([-self.road.lane_width, self.road.lane_width]):
             destination = (x, lane + change)
-            if self._canAvoidObstacle(obstacle=vehicle, destination=destination):
+            if self._canAvoid(obstacle=vehicle, destination=destination):
                 limit = self._getMaxSpeed(position=destination)
                 if limit > best_limit:
                     best_change, best_limit = change, limit
         # Change to the best possible lane.
         if best_change != 0:
             destination = (x, lane + best_change)
-            self._avoidObstacle(obstacle=vehicle, destination=destination)
+            self._avoid(obstacle=vehicle, destination=destination)
             self.position = destination
             return True
         return False
