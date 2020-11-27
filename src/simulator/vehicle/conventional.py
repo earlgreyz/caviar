@@ -82,6 +82,10 @@ class ConventionalCar(Car):
         return False
 
     def _tryChangeEmergency(self) -> bool:
+        '''
+        Try changing the lane to create an emergency corridor.
+        :return: if vehicle performed an emergency action.
+        '''
         emergency = self._getEmergency()
         changeValue = self.road.lane_width // 2
         # If there is no emergency or already avoiding the emergency, continue.
@@ -106,15 +110,6 @@ class ConventionalCar(Car):
         change = -changeValue if absoluteLane == 0 else changeValue
         self._tryAvoidWithChange(emergency, change)
         return True
-
-    def _tryAvoidWithChange(self, obstacle: Vehicle, change: int) -> bool:
-        x, lane = self.position
-        destination = (x, lane + change)
-        if self._canAvoid(obstacle=obstacle, destination=destination):
-            self._avoid(obstacle=obstacle, destination=destination)
-            self.position = destination
-            return True
-        return False
 
     def _canChangeLane(self, destination: Position, force: bool = False) -> bool:
         change_lane = super()._canChangeLane(destination=destination, force=force)

@@ -165,6 +165,21 @@ class Car(Vehicle):
         if isinstance(vehicle, Car):
             vehicle.zipped.add(obstacle)
 
+    def _tryAvoidWithChange(self, obstacle: Vehicle, change: int) -> bool:
+        '''
+        Try avoiding an obstacle by changing a lane by a specified vector.
+        :param obstacle: obstacle to avoid.
+        :param change: lane change vector.
+        :return: if lane was changed.
+        '''
+        x, lane = self.position
+        destination = (x, lane + change)
+        if self._canAvoid(obstacle=obstacle, destination=destination):
+            self._avoid(obstacle=obstacle, destination=destination)
+            self.position = destination
+            return True
+        return False
+
     def _tryChangeLanes(self) -> bool:
         '''
         Tries to change a lane for vehicle benefits.

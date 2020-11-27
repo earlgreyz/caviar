@@ -43,6 +43,36 @@ class AutonomousCar(Car):
             return True
         return False
 
+    def _tryChangeEmergency(self) -> bool:
+        '''
+        Try changing the lane to create an emergency corridor.
+        :return: if vehicle performed an emergency action.
+        '''
+        emergency = self._getEmergency()
+        changeValue = self.road.lane_width // 2
+        # If there is no emergency or already avoiding the emergency, continue.
+        if emergency is None:
+            if self.road.isSingleLane(self):
+                return False
+            else:
+                _, absoluteLane = self.road.getAbsolutePosition(self.position)
+                change = changeValue if absoluteLane == -1 else -changeValue
+                # When coming back always get priority.
+                return self._tryAvoidWithChange(Obstacle((-1, -1), 0, 0), change)
+
+        # If already creating emergency corridor don't move.
+        if not self.road.isSingleLane(self):
+            return True
+        # Decelerate slowly, cannot switch lanes when the speed is too high.
+        self.velocity = max(1, self.velocity - 1)
+        if self.velocity > 2:
+            return True
+        # Destination lane depends on the road position.
+        _, absoluteLane = self.road.getAbsolutePosition(self.position)
+        change = -changeValue if absoluteLane == 0 else changeValue
+        self._tryAvoidWithChange(emergency, change)
+        return True
+
     def _tryChangeLanes(self) -> bool:
         # Find the best lane change.
         x, lane = self.position
