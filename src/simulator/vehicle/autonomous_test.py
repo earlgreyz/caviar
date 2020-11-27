@@ -12,7 +12,7 @@ from simulator.vehicle.vehicle_test import implementsVehicle
 @implementsVehicle
 class AutonomousCarTestCase(unittest.TestCase):
     def getVehicle(self, position: Position) -> Vehicle:
-        road = Mock(length=100, lane_width=1)
+        road = Mock(length=100, lane_width=1, emergency=set())
         road.isProperPosition.return_value = False
         road.getNextVehicle.return_value = (10000, None)
         road.getPreviousVehicle.return_value = (-1, None)

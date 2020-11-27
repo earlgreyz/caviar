@@ -654,13 +654,15 @@ class RoadTestCase(unittest.TestCase):
         self.assertFalse(road.isProperPosition(position=(0, 1)))
         self.assertFalse(road.isProperPosition(position=(0, -1)))
         road = Road(100, 1, lane_width=2)
+        self.assertTrue(road.isProperPosition(position=(0, 0)))
         self.assertTrue(road.isProperPosition(position=(0, 1)))
         self.assertTrue(road.isProperPosition(position=(0, 2)))
+        self.assertTrue(road.isProperPosition(position=(0, 3)))
         self.assertTrue(road.isProperPosition(position=(99, 1)))
         self.assertTrue(road.isProperPosition(position=(99, 2)))
         self.assertFalse(road.isProperPosition(position=(-1, 1)))
         self.assertFalse(road.isProperPosition(position=(100, 1)))
-        self.assertFalse(road.isProperPosition(position=(0, 3)))
+        self.assertFalse(road.isProperPosition(position=(0, 4)))
 
     def test_isSafePosition(self):
         road = Road(length=100, lanes_count=5, lane_width=1)

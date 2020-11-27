@@ -58,7 +58,7 @@ class CarTestCase(unittest.TestCase):
 
         def mock_isSafePosition(invalid: typing.List[Position]) \
                 -> typing.Callable[[Position], bool]:
-            return lambda position: position not in invalid
+            return lambda position, ignore: position not in invalid
 
         # Vehicle of one cell length .
         car = Car(position=(0, 0), velocity=1, length=1, road=road)
@@ -206,19 +206,41 @@ class CarTestCase(unittest.TestCase):
         car = Car(position=(42, 1), velocity=5, road=road)
         car._tryAvoidObstacle = \
             Mock(side_effect=mock_tryChange(car=car, result=True, destination=(42, 0)))
+        car._tryChangeEmergency = \
+            Mock(side_effect=mock_tryChange(car=car, result=True, destination=(42, 0)))
         car._tryChangeLanes = \
             Mock(side_effect=mock_tryChange(car=car, result=True, destination=(42, 2)))
         position = car.beforeMove()
         car._tryAvoidObstacle.assert_called_once()
+        car._tryChangeEmergency.assert_not_called()
         car._tryChangeLanes.assert_not_called()
         self.assertEqual(position, (42, 0))
         self.assertEqual(car.position, (42, 0))
         self.assertEqual(car.last_position, (42, 1))
         self.assertIn(((42, 1), 5), car.path)
-        # No obstacles avoided.
+        # Emergency corridor.
         road = Mock()
         car = Car(position=(42, 1), velocity=5, road=road)
         car._tryAvoidObstacle = \
+            Mock(side_effect=mock_tryChange(car=car, result=False, destination=(42, 1)))
+        car._tryChangeEmergency = \
+            Mock(side_effect=mock_tryChange(car=car, result=True, destination=(42, 0)))
+        car._tryChangeLanes = \
+            Mock(side_effect=mock_tryChange(car=car, result=True, destination=(42, 2)))
+        position = car.beforeMove()
+        car._tryAvoidObstacle.assert_called_once()
+        car._tryChangeEmergency.assert_called_once()
+        car._tryChangeLanes.assert_not_called()
+        self.assertEqual(position, (42, 0))
+        self.assertEqual(car.position, (42, 0))
+        self.assertEqual(car.last_position, (42, 1))
+        self.assertIn(((42, 1), 5), car.path)
+        # No obstacles or emergency corridor.
+        road = Mock()
+        car = Car(position=(42, 1), velocity=5, road=road)
+        car._tryAvoidObstacle = \
+            Mock(side_effect=mock_tryChange(car=car, result=False, destination=(42, 1)))
+        car._tryChangeEmergency = \
             Mock(side_effect=mock_tryChange(car=car, result=False, destination=(42, 1)))
         car._tryChangeLanes = \
             Mock(side_effect=mock_tryChange(car=car, result=True, destination=(42, 2)))
