@@ -185,21 +185,21 @@ class Car(Vehicle):
         Tries to change a lane for vehicle benefits.
         :return: whether a lane was changed.
         '''
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def _tryAvoidObstacle(self) -> bool:
         '''
         Checks if an obstacle blocks the current lane and tries to avoid it.
         :return: whether a lane was changed.
         '''
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def _tryChangeEmergency(self) -> bool:
         '''
         Tries to change a lane to make space for an emergency vehicle.
         :return: whether a lane was changed.
         '''
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def _getEmergency(self) -> typing.Optional[Vehicle]:
         '''

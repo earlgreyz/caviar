@@ -252,7 +252,27 @@ class CarTestCase(unittest.TestCase):
         self.assertEqual(car.last_position, (42, 1))
         self.assertIn(((42, 1), 5), car.path)
 
-    def test_isAutonomous(self):
+    def test_getEmergency(self):
+        # No emergency vehicles.
+        road = Mock(emergency=set())
+        car = Car(position=(0, 0), velocity=1, road=road)
+        self.assertIsNone(car._getEmergency())
+        # Emergency vehicle is too far.
+        road = Mock(emergency={Mock(position=(0, 0))})
+        car = Car(position=(Car.EMERGENCY_RADIUS + 1, 0), velocity=1, road=road)
+        self.assertIsNone(car._getEmergency())
+        # Emergency vehicle approaching.
+        emergency = Mock(position=(0, 0))
+        road = Mock(emergency={emergency})
+        car = Car(position=(Car.EMERGENCY_RADIUS - 1, 0), velocity=1, road=road)
+        self.assertIs(car._getEmergency(), emergency)
+        # Emergency vehicle in front.
+        emergency = Mock(position=(Car.EMERGENCY_RADIUS - 1, 0))
+        road = Mock(emergency={emergency})
+        car = Car(position=(0, 0), velocity=1, road=road)
+        self.assertIs(car._getEmergency(), emergency)
+
+    def test_isCar(self):
         car = Car(position=(0, 0), velocity=1, road=Mock())
         self.assertTrue(isCar(car))
         vehicle = Vehicle(position=(0, 0), velocity=0)

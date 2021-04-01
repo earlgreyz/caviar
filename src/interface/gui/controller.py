@@ -41,7 +41,7 @@ class Controller:
         pygame.init()
         self.width = self.simulator.road.length * self.SIZE
         self.height = self.simulator.road.sublanesCount * self.SIZE
-        self.screen = pygame.display.set_mode((self.width, self.height + self.STATS_SIZE))
+        self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption('CAViar', 'CAViar')
 
     def run(self, speed: float = 100., refresh: int = 60, buffer: int = 1) -> None:

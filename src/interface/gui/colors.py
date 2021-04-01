@@ -5,13 +5,13 @@ Color = typing.Tuple[int, int, int]
 
 class Colors:
     WHITE = (255, 255, 255)
-    BLACK = (0, 0, 0)
+    BLACK = (232, 168, 32)
     DARK = (67, 67, 78)
-    LIGHT = (212, 212, 212)
-    GREEN = (27, 176, 66)
-    RED = (255, 105, 97)
-    PURPLE = (150, 111, 214)
-    BLUE = (62, 84, 161)
+    LIGHT = (255, 255, 255)
+    GREEN = (246, 104, 185)
+    RED = (34, 193, 248)
+    PURPLE = (155, 104, 237)
+    BLUE = (0, 195, 177)
 
 
 def gradient(start: Color, end: Color, p: float) -> Color:
